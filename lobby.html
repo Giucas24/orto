@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>🥕 Orto Conquista - Scegli la Tua Fazione</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2e7d32, #66bb6a, #a5d6a7);
+            font-family: 'Comic Sans MS', 'Verdana', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            color: #1b5e20;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .instruction {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .character-card {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 4px solid transparent;
+        }
+
+        .character-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .character-card.selected {
+            transform: translateY(-10px) scale(1.08);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            border-color: #ffd700;
+        }
+
+        .character-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+
+        .card-image {
+            width: 250px;
+            height: auto;
+            display: block;
+            transition: all 0.3s ease;
+            border-radius: 15px;
+        }
+
+        .character-card:hover .card-image {
+            filter: brightness(1.1) contrast(1.1);
+        }
+
+        .card-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            color: white;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .character-card:hover .card-info {
+            transform: translateY(0);
+        }
+
+        .card-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .start-button {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.8em;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.5);
+            background: linear-gradient(45deg, #66bb6a, #81c784);
+        }
+
+        .start-button:disabled {
+            background: linear-gradient(45deg, #bdbdbd, #9e9e9e);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .selected-info {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .selected-info.show {
+            background: linear-gradient(45deg, #fff3e0, #ffe0b2);
+            border: 3px solid #ff9800;
+        }
+
+        .selected-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e65100;
+        }
+
+        /* Effetti particellari */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.8;
+            font-size: 24px;
+            animation: particleFloat 3s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-150px) rotate(360deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .card-image {
+                width: 200px;
+            }
+
+            .cards-container {
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                gap: 10px;
+            }
+
+            .card-image {
+                width: 150px;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .instruction {
+                font-size: 1.2em;
+                padding: 10px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card-image {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🥕 ORTO CONQUISTA 🥕</h1>
+        <p>La battaglia vegetale più epica del giardino!</p>
+    </div>
+
+    <div class="instruction">
+        🎭 Scegli la tua fazione orticola e guida il tuo popolo alla vittoria!
+    </div>
+
+    <div class="cards-container">
+        <!-- Carta Cavolfiori -->
+        <div class="character-card" data-faction="0" onclick="selectFaction(0)">
+            <img src="carta brassius modificata.png" alt="Clan dei Cavolfiori" class="card-image">
+            <div class="card-info">
+                <div class="card-name">❄️ Clan dei Cavolfiori</div>
+            </div>
+        </div>
+
+        <!-- Carta Cipolle -->
+        <div class="character-card" data-faction="1" onclick="selectFaction(1)">
+            <img src="Carta duca Cipollotto di tropea.png" alt="Repubblica delle Cipolle" class="card-image">
+            <div class="card-info">
+                <div class="card-name">🧅 Repubblica delle Cipolle</div>
+            </div>
+        </div>
+
+        <!-- Carta Carote -->
+        <div class="character-card" data-faction="2" onclick="selectFaction(2)">
+            <img src="Carta generale Brassius.png" alt="Impero delle Carote" class="card-image">
+            <div class="card-info">
+                <div class="card-name">🥕 Impero delle Carote</div>
+            </div>
+        </div>
+
+        <!-- Carta Broccoli -->
+        <div class="character-card" data-faction="3" onclick="selectFaction(3)">
+            <img src="Carta duca Cipollotto di tropea.png" alt="Tribù dei Broccoli" class="card-image">
+            <div class="card-info">
+                <div class="card-name">🥦 Tribù dei Broccoli</div>
+            </div>
+        </div>
+
+        <!-- Carta Pomodori -->
+        <div class="character-card" data-faction="4" onclick="selectFaction(4)">
+            <img src="Carta generale Brassius.png" alt="Confederazione dei Pomodori" class="card-image">
+            <div class="card-info">
+                <div class="card-name">🍅 Confederazione dei Pomodori</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="selected-info" id="selected-info">
+        <div class="selected-text">Seleziona una fazione per continuare...</div>
+    </div>
+
+    <button class="start-button" id="start-game" onclick="startGame()" disabled>
+        🚀 Inizia la Conquista dell'Orto!
+    </button>
+
+    <script>
+        let selectedFaction = null;
+
+        const factionData = [
+            {
+                name: 'Cavolfiori',
+                emoji: '❄️',
+                color: '#e8d5e8',
+                leader: 'Generale Cavolo Brassius',
+                personality: 'Stoici, disciplinati, organizzati in formazioni compatte',
+                fullName: 'Il Clan dei Cavolfiori'
+            },
+            {
+                name: 'Cipolle',
+                emoji: '🧅',
+                color: '#d1a3d1',
+                leader: 'Duca Cipollotto di Tropea',
+                personality: 'Astuti, diplomatici ma subdoli, maestri dell\'inganno',
+                fullName: 'Repubblica delle Cipolle'
+            },
+            {
+                name: 'Carote',
+                emoji: '🥕',
+                color: '#ffb347',
+                leader: 'Imperatrice Carota Regina',
+                personality: 'Nobili, tradizionalisti, amanti del lusso sotterraneo',
+                fullName: 'Impero delle Carote'
+            },
+            {
+                name: 'Broccoli',
+                emoji: '🥦',
+                color: '#90ee90',
+                leader: 'Sciamano Broccolo Antico',
+                personality: 'Selvaggi, ambientalisti, connessi con la natura',
+                fullName: 'Tribù dei Broccoli'
+            },
+            {
+                name: 'Pomodori',
+                emoji: '🍅',
+                color: '#ff7f7f',
+                leader: 'Generale Pomodoro San Marzano',
+                personality: 'Passionali, aggressivi, amanti delle battaglie frontali',
+                fullName: 'Confederazione dei Pomodori'
+            }
+        ];
+
+        function selectFaction(factionIndex) {
+            // Rimuovi selezione precedente
+            document.querySelectorAll('.character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Seleziona nuova fazione
+            selectedFaction = factionIndex;
+            document.querySelector(`[data-faction="${factionIndex}"]`).classList.add('selected');
+
+            // Aggiorna info selezione
+            const faction = factionData[factionIndex];
+            const selectedInfo = document.getElementById('selected-info');
+            selectedInfo.classList.add('show');
+            selectedInfo.innerHTML = `
+                <div class="selected-text">
+                    ${faction.emoji} Hai scelto: <strong>${faction.fullName}</strong><br>
+                    <small>👑 Leader: ${faction.leader}</small>
+                </div>
+            `;
+
+            // Abilita bottone start
+            const startButton = document.getElementById('start-game');
+            startButton.disabled = false;
+            startButton.textContent = `🚀 Conquista l'Orto con i ${faction.name}!`;
+
+            // Effetto di selezione
+            showSelectionEffect(factionIndex);
+        }
+
+        function showSelectionEffect(factionIndex) {
+            const faction = factionData[factionIndex];
+
+            // Crea effetto particelle
+            createParticles(faction.emoji);
+
+            console.log(`🎯 Hai scelto: ${faction.emoji} ${faction.name} - ${faction.leader}`);
+        }
+
+        function createParticles(emoji) {
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emoji;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 1 + 's';
+
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 4000);
+            }
+        }
+
+        function startGame() {
+            if (selectedFaction === null) return;
+
+            const faction = factionData[selectedFaction];
+
+            // Effetto di transizione
+            document.body.style.transition = 'all 1s ease-out';
+            document.body.style.transform = 'scale(0.9)';
+            document.body.style.opacity = '0.5';
+
+            setTimeout(() => {
+                // Salva la scelta del giocatore per il gioco principale
+                localStorage.setItem('selectedFaction', selectedFaction);
+                localStorage.setItem('playerName', faction.name);
+                localStorage.setItem('selectedLeader', faction.leader);
+
+                alert(`🎉 Perfetto! Hai scelto i ${faction.name}!\n\n👑 Leader: ${faction.leader}\n🎭 ${faction.personality}\n\n🚀 Ora puoi procedere al gioco principale!\n\n💡 Integra questa pagina con il gioco per un'esperienza completa!`);
+
+                // Qui in futuro collegherai al gioco vero:
+                // window.location.href = 'orto-conquista-game.html';
+
+                location.reload();
+            }, 1000);
+        }
+
+        // Controlli da tastiera
+        document.addEventListener('keydown', (event) => {
+            const key = parseInt(event.key);
+            if (key >= 1 && key <= 5) {
+                selectFaction(key - 1);
+            }
+            if (event.key === 'Enter' && selectedFaction !== null) {
+                startGame();
+            }
+            if (event.key === 'Escape') {
+                // Deseleziona
+                document.querySelectorAll('.character-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                selectedFaction = null;
+                document.getElementById('selected-info').classList.remove('show');
+                document.getElementById('selected-info').innerHTML = '<div class="selected-text">Seleziona una fazione per continuare...</div>';
+                document.getElementById('start-game').disabled = true;
+                document.getElementById('start-game').textContent = '🚀 Inizia la Conquista dell\'Orto!';
+            }
+        });
+
+        // Messaggio di benvenuto
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                console.log('🎮 Benvenuto in Orto Conquista! Usa i tasti 1-5 per selezione rapida, Enter per confermare!');
+            }, 1000);
+        });
+
+        // Animazione di ingresso
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.transform = 'scale(1.1)';
+
+            setTimeout(() => {
+                document.body.style.transition = 'all 1s ease-out';
+                document.body.style.opacity = '1';
+                document.body.style.transform = 'scale(1)';
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
