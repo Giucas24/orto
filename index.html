@@ -3,87 +3,922 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Mappa Orto Conquista</title>
+    <title>Orto Conquista - Sistema di Gioco Base</title>
     <style>
         body {
-            background-color: #f4fff0;
-            font-family: 'Verdana', sans-serif;
+            background: linear-gradient(135deg, #f4fff0, #e2f7d1);
+            font-family: 'Comic Sans MS', 'Verdana', sans-serif;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        .controls-panel {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: fit-content;
         }
 
         svg {
             width: 100%;
-            height: 90vh;
-            border: 2px solid #6b8e23;
-            background: #e2f7d1;
+            height: 600px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #e2f7d1, #d4f0c0);
         }
 
         .territory {
             cursor: pointer;
-            transition: fill 0.3s;
+            transition: all 0.3s ease;
+            stroke: #333;
+            stroke-width: 2;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .territory:hover {
-            fill-opacity: 0.7;
+            stroke-width: 4;
+            filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+        }
+
+        .territory.selected {
+            stroke: #ff0000;
+            stroke-width: 5;
+            stroke-dasharray: 10, 5;
+            animation: pulse 1s infinite;
+        }
+
+        .territory.attackable {
+            stroke: #00ff00;
+            stroke-width: 3;
+            stroke-dasharray: 5, 5;
+        }
+
+        @keyframes pulse {
+            0% {
+                stroke-opacity: 1;
+            }
+
+            50% {
+                stroke-opacity: 0.5;
+            }
+
+            100% {
+                stroke-opacity: 1;
+            }
+        }
+
+        .unit-count {
+            font-size: 16px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: white;
+            stroke: #333;
+            stroke-width: 1;
+            paint-order: stroke;
         }
 
         .label {
-            font-size: 12px;
+            font-size: 10px;
             pointer-events: none;
             fill: #333;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        .current-player {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .faction-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button.attack {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .button.attack:hover {
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .phase-indicator {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 2px solid #2196f3;
+        }
+
+        .battle-log {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 2px solid #ff9800;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .log-attack {
+            background: #ffebee;
+        }
+
+        .log-defend {
+            background: #e8f5e8;
+        }
+
+        .log-move {
+            background: #e3f2fd;
+        }
+
+        .region-bonus {
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* Colori delle fazioni */
+        .cavolfiori {
+            fill: #e1d4e8;
+        }
+
+        .cipolle {
+            fill: #c9a0dc;
+        }
+
+        .carote {
+            fill: #ffa500;
+        }
+
+        .broccoli {
+            fill: #228b22;
+        }
+
+        .pomodori {
+            fill: #ff6347;
+        }
+
+        .neutrale {
+            fill: #f4e285;
         }
     </style>
 </head>
 
 <body>
-    <svg viewBox="0 0 800 600">
-        <!-- Cipollandia -->
-        <circle class="territory" id="bulbopoli" cx="80" cy="80" r="40" fill="#c9a0dc" />
-        <circle class="territory" id="tropea" cx="160" cy="60" r="40" fill="#c9a0dc" />
-        <circle class="territory" id="scalogna" cx="120" cy="150" r="40" fill="#c9a0dc" />
+    <div class="game-container">
+        <div class="map-container">
+            <svg viewBox="0 0 800 600" id="game-map">
+                <!-- Connessioni tra territori (linee) -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                    </marker>
+                </defs>
 
-        <!-- Carotegna -->
-        <circle class="territory" id="carrot" cx="280" cy="80" r="40" fill="#ffa500" />
-        <circle class="territory" id="orange" cx="360" cy="60" r="40" fill="#ffa500" />
-        <circle class="territory" id="root" cx="320" cy="150" r="40" fill="#ffa500" />
+                <!-- Cipollandia -->
+                <circle class="territory cipolle" id="bulbopoli" cx="120" cy="100" r="35" />
+                <circle class="territory cipolle" id="tropea" cx="200" cy="80" r="35" />
+                <circle class="territory cipolle" id="scalogna" cx="160" cy="160" r="35" />
 
-        <!-- Tomatosia -->
-        <circle class="territory" id="sanmarzano" cx="80" cy="450" r="40" fill="#ff6347" />
-        <circle class="territory" id="cherry" cx="140" cy="500" r="40" fill="#ff6347" />
-        <circle class="territory" id="pachino" cx="200" cy="440" r="40" fill="#ff6347" />
+                <!-- Carotegna -->
+                <circle class="territory carote" id="carrot" cx="320" cy="100" r="35" />
+                <circle class="territory carote" id="orange" cx="400" cy="80" r="35" />
+                <circle class="territory carote" id="root" cx="360" cy="160" r="35" />
 
-        <!-- Broccolandia -->
-        <circle class="territory" id="greenvalley" cx="320" cy="450" r="40" fill="#228b22" />
-        <circle class="territory" id="forest" cx="400" cy="500" r="40" fill="#228b22" />
-        <circle class="territory" id="cavolonero" cx="480" cy="440" r="40" fill="#228b22" />
+                <!-- Tomatosia -->
+                <circle class="territory pomodori" id="sanmarzano" cy="120" cy="420" r="35" />
+                <circle class="territory pomodori" id="cherry" cx="180" cy="480" r="35" />
+                <circle class="territory pomodori" id="pachino" cx="240" cy="420" r="35" />
 
-        <!-- Mercato Centrale -->
-        <circle class="territory" id="bazaar" cx="240" cy="280" r="40" fill="#f4e285" />
-        <circle class="territory" id="seedbank" cx="340" cy="250" r="40" fill="#f4e285" />
-        <circle class="territory" id="compost" cx="300" cy="340" r="40" fill="#f4e285" />
-        <circle class="territory" id="greenhouse" cx="400" cy="300" r="40" fill="#f4e285" />
+                <!-- Broccolandia -->
+                <circle class="territory broccoli" id="greenvalley" cx="360" cy="420" r="35" />
+                <circle class="territory broccoli" id="forest" cx="440" cy="480" r="35" />
+                <circle class="territory broccoli" id="cavolonero" cx="520" cy="420" r="35" />
 
-        <!-- Labels -->
-        <text class="label" x="60" y="80">Bulbopoli</text>
-        <text class="label" x="140" y="60">Tropea Fields</text>
-        <text class="label" x="100" y="150">Scalogna</text>
+                <!-- Mercato Centrale -->
+                <circle class="territory neutrale" id="bazaar" cx="280" cy="260" r="35" />
+                <circle class="territory neutrale" id="seedbank" cx="380" cy="240" r="35" />
+                <circle class="territory neutrale" id="compost" cx="340" cy="320" r="35" />
+                <circle class="territory neutrale" id="greenhouse" cx="440" cy="300" r="35" />
 
-        <text class="label" x="260" y="80">Carrot City</text>
-        <text class="label" x="340" y="60">Orange County</text>
-        <text class="label" x="300" y="150">Root Deep</text>
+                <!-- Unit counts (will be populated by JS) -->
+                <g id="unit-counts"></g>
 
-        <text class="label" x="50" y="450">San Marzano</text>
-        <text class="label" x="110" y="510">Cherry Valley</text>
-        <text class="label" x="180" y="440">Pachino Coast</text>
+                <!-- Labels -->
+                <text class="label" x="120" y="140">Bulbopoli</text>
+                <text class="label" x="200" y="120">Tropea</text>
+                <text class="label" x="160" y="200">Scalogna</text>
 
-        <text class="label" x="300" y="450">Green Valley</text>
-        <text class="label" x="380" y="500">Broccoli Forest</text>
-        <text class="label" x="460" y="440">Cavolo Nero</text>
+                <text class="label" x="320" y="140">Carrot City</text>
+                <text class="label" x="400" y="120">Orange County</text>
+                <text class="label" x="360" y="200">Root Deep</text>
 
-        <text class="label" x="220" y="280">Grand Bazaar</text>
-        <text class="label" x="320" y="250">Seed Bank</text>
-        <text class="label" x="280" y="340">Compost Works</text>
-        <text class="label" x="380" y="300">Greenhouse Labs</text>
-    </svg>
+                <text class="label" x="120" y="460">San Marzano</text>
+                <text class="label" x="180" y="520">Cherry Valley</text>
+                <text class="label" x="240" y="460">Pachino</text>
+
+                <text class="label" x="360" y="460">Green Valley</text>
+                <text class="label" x="440" y="520">Broccoli Forest</text>
+                <text class="label" x="520" y="460">Cavolo Nero</text>
+
+                <text class="label" x="280" y="300">Grand Bazaar</text>
+                <text class="label" x="380" y="280">Seed Bank</text>
+                <text class="label" x="340" y="360">Compost</text>
+                <text class="label" x="440" y="340">Greenhouse</text>
+            </svg>
+        </div>
+
+        <div class="controls-panel">
+            <div class="current-player" id="current-player">
+                <h3>Turno di: <span id="player-name">Cavolfiori</span></h3>
+                <div id="player-color"
+                    style="width: 20px; height: 20px; border-radius: 50%; display: inline-block; background: #e1d4e8;">
+                </div>
+            </div>
+
+            <div class="phase-indicator" id="phase-indicator">
+                <strong>Fase: <span id="current-phase">Rinforzi</span></strong>
+            </div>
+
+            <div class="faction-info" id="faction-info">
+                <h4 id="faction-name">Clan dei Cavolfiori</h4>
+                <p><strong>Leader:</strong> <span id="leader-name">Generale Cavolo Brassius</span></p>
+                <p><strong>🔮 Abilità:</strong> <span id="ability-name">Resistenza Glaciale</span></p>
+                <p><small id="ability-desc">Una volta per turno può rigenerare 1 unità</small></p>
+                <p><strong>💪 Bonus:</strong> <span id="faction-bonus">+1 difesa in montagna</span></p>
+                <p><strong>⚠️ Debolezza:</strong> <span id="faction-weakness">-1 vs Carote</span></p>
+                <div>Territori: <span id="territory-count">3</span></div>
+                <div>Rinforzi disponibili: <span id="reinforcements">4</span></div>
+                <button class="button" id="leader-ability" onclick="useLeaderAbility()" disabled>
+                    🌟 Usa Abilità Leader
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="button" id="place-reinforcements" onclick="placeReinforcements()">
+                    Piazza Rinforzi Automaticamente
+                </button>
+                <button class="button" id="next-phase" onclick="nextPhase()">
+                    Prossima Fase
+                </button>
+                <button class="button attack" id="attack-btn" onclick="toggleAttackMode()" disabled>
+                    Modalità Attacco
+                </button>
+                <button class="button" id="end-turn" onclick="endTurn()" disabled>
+                    Fine Turno
+                </button>
+            </div>
+
+            <div class="battle-log">
+                <h4>📜 Log delle Battaglie</h4>
+                <div id="log-content">
+                    <div class="log-entry">🎮 Gioco iniziato! Fase rinforzi per i Cavolfiori.</div>
+                </div>
+            </div>
+
+            <div class="region-bonus">
+                <strong>🏆 Bonus Regioni:</strong><br>
+                <small>Controlla una regione completa per bonus rinforzi!</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stato del gioco
+        let gameState = {
+            currentPlayer: 0,
+            phase: 'reinforcement', // reinforcement, attack, move
+            selectedTerritory: null,
+            attackMode: false,
+            reinforcements: 4,
+            turn: 1,
+            usedAbilities: {}, // Traccia abilità usate per turno
+            players: [
+                {
+                    name: 'Cavolfiori',
+                    color: '#e1d4e8',
+                    territories: ['bulbopoli', 'tropea', 'scalogna'],
+                    leader: 'Generale Cavolo Brassius',
+                    ability: 'Resistenza Glaciale',
+                    abilityDescription: 'Una volta per turno può rigenerare 1 unità in un territorio che ha subito perdite',
+                    bonus: '+1 difesa in territori di montagna',
+                    weakness: '-1 attacco contro fazioni di radice (Carote)',
+                    abilityUsed: false
+                },
+                {
+                    name: 'Cipolle',
+                    color: '#c9a0dc',
+                    territories: ['carrot', 'orange', 'root'],
+                    leader: 'Duca Cipollotto di Tropea',
+                    ability: 'Lacrime Corrosive',
+                    abilityDescription: 'In battaglia, il nemico perde automaticamente 1 dado',
+                    bonus: '+1 attacco contro tutte le fazioni non-bulbo',
+                    weakness: 'Perde 1 unità extra con eventi acqua',
+                    abilityUsed: false
+                },
+                {
+                    name: 'Carote',
+                    color: '#ffa500',
+                    territories: ['sanmarzano', 'cherry', 'pachino'],
+                    leader: 'Imperatrice Carota Regina',
+                    ability: 'Vista Acuta',
+                    abilityDescription: 'Può vedere le info degli avversari adiacenti',
+                    bonus: '+1 rinforzo ogni 3 territori controllati',
+                    weakness: '-1 difesa contro fazioni aeree (Broccoli, Cavolfiori)',
+                    abilityUsed: false
+                },
+                {
+                    name: 'Broccoli',
+                    color: '#228b22',
+                    territories: ['greenvalley', 'forest', 'cavolonero'],
+                    leader: 'Sciamano Broccolo Antico',
+                    ability: 'Germogli Selvaggi',
+                    abilityDescription: 'Può evocare 1 unità bonus in qualsiasi territorio controllato',
+                    bonus: '+2 rinforzi in territori fertili',
+                    weakness: 'Perde 1 unità extra con carte pesticidi',
+                    abilityUsed: false
+                },
+                {
+                    name: 'Pomodori',
+                    color: '#ff6347',
+                    territories: ['bazaar', 'seedbank', 'compost', 'greenhouse'],
+                    leader: 'Generale Pomodoro San Marzano',
+                    ability: 'Polpa Esplosiva',
+                    abilityDescription: 'Quando attacca, infligge 1 danno al territorio nemico adiacente',
+                    bonus: '+1 attacco quando ha 5+ unità in un territorio',
+                    weakness: '-1 difesa in territori secchi o montani',
+                    abilityUsed: false
+                }
+            ],
+            territories: {}
+        };
+
+        // Territorio speciali e loro bonus
+        const territoryTypes = {
+            // Territori di montagna (bonus Cavolfiori)
+            'bulbopoli': { type: 'mountain', name: 'Bulbopoli' },
+            'tropea': { type: 'mountain', name: 'Tropea Fields' },
+            'cavolonero': { type: 'mountain', name: 'Cavolo Nero' },
+
+            // Territori fertili (bonus Broccoli)
+            'greenvalley': { type: 'fertile', name: 'Green Valley' },
+            'forest': { type: 'fertile', name: 'Broccoli Forest' },
+            'compost': { type: 'fertile', name: 'Compost Works' },
+
+            // Territori secchi (debolezza Pomodori)
+            'orange': { type: 'dry', name: 'Orange County' },
+            'root': { type: 'dry', name: 'Root Deep' },
+
+            // Territori normali
+            'scalogna': { type: 'normal', name: 'Scalogna Valley' },
+            'carrot': { type: 'normal', name: 'Carrot City' },
+            'sanmarzano': { type: 'normal', name: 'San Marzano' },
+            'cherry': { type: 'normal', name: 'Cherry Valley' },
+            'pachino': { type: 'normal', name: 'Pachino Coast' },
+            'bazaar': { type: 'market', name: 'Grand Bazaar' },
+            'seedbank': { type: 'market', name: 'Seed Bank' },
+            'greenhouse': { type: 'market', name: 'Greenhouse Labs' }
+        };
+
+        // Definisce le relazioni tra fazioni per bonus/malus
+        const factionRelations = {
+            0: { // Cavolfiori
+                weakness: [2], // vs Carote
+                aerial: true
+            },
+            1: { // Cipolle
+                bonus: [0, 2, 3, 4], // vs tutti tranne se stessi
+                bulb: true
+            },
+            2: { // Carote
+                weakness: [0, 3], // vs Cavolfiori e Broccoli (aeree)
+                root: true
+            },
+            3: { // Broccoli
+                aerial: true
+            },
+            4: { // Pomodori
+                weakness: [], // in territori secchi/montani (gestito dal territorio)
+            }
+        };
+        const adjacencies = {
+            'bulbopoli': ['tropea', 'scalogna', 'bazaar'],
+            'tropea': ['bulbopoli', 'scalogna', 'carrot', 'bazaar'],
+            'scalogna': ['bulbopoli', 'tropea', 'bazaar', 'compost'],
+            'carrot': ['tropea', 'orange', 'root', 'seedbank'],
+            'orange': ['carrot', 'root', 'seedbank', 'greenhouse'],
+            'root': ['carrot', 'orange', 'seedbank', 'compost'],
+            'sanmarzano': ['cherry', 'pachino', 'bazaar', 'compost'],
+            'cherry': ['sanmarzano', 'pachino', 'compost', 'greenvalley'],
+            'pachino': ['sanmarzano', 'cherry', 'compost', 'greenvalley'],
+            'greenvalley': ['cherry', 'pachino', 'forest', 'cavolonero', 'compost', 'greenhouse'],
+            'forest': ['greenvalley', 'cavolonero', 'greenhouse'],
+            'cavolonero': ['greenvalley', 'forest', 'greenhouse'],
+            'bazaar': ['bulbopoli', 'tropea', 'scalogna', 'sanmarzano', 'seedbank', 'compost'],
+            'seedbank': ['carrot', 'orange', 'root', 'bazaar', 'compost', 'greenhouse'],
+            'compost': ['scalogna', 'root', 'sanmarzano', 'cherry', 'pachino', 'greenvalley', 'bazaar', 'seedbank', 'greenhouse'],
+            'greenhouse': ['orange', 'greenvalley', 'forest', 'cavolonero', 'seedbank', 'compost']
+        };
+
+        // Inizializzazione del gioco
+        function initGame() {
+            // Inizializza i territori con unità casuali
+            gameState.players.forEach((player, playerIndex) => {
+                player.territories.forEach(territoryId => {
+                    gameState.territories[territoryId] = {
+                        owner: playerIndex,
+                        units: Math.floor(Math.random() * 3) + 2 // 2-4 unità iniziali
+                    };
+                });
+            });
+
+            updateDisplay();
+            addEventListeners();
+        }
+
+        // Calcola i rinforzi per il giocatore corrente
+        function calculateReinforcements(playerIndex) {
+            const player = gameState.players[playerIndex];
+            let baseReinforcements = Math.max(3, Math.floor(player.territories.length / 2));
+
+            // Bonus Carote: +1 rinforzo ogni 3 territori
+            if (playerIndex === 2) {
+                baseReinforcements += Math.floor(player.territories.length / 3);
+            }
+
+            // Bonus Broccoli: +2 rinforzi per territori fertili
+            if (playerIndex === 3) {
+                const fertileTerritories = player.territories.filter(tId =>
+                    territoryTypes[tId] && territoryTypes[tId].type === 'fertile'
+                ).length;
+                baseReinforcements += fertileTerritories * 2;
+            }
+
+            return baseReinforcements;
+        }
+
+        // Usa l'abilità del leader
+        function useLeaderAbility() {
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+
+            if (currentPlayer.abilityUsed) {
+                addLogEntry('❌ Abilità già usata questo turno!', 'log-attack');
+                return;
+            }
+
+            switch (gameState.currentPlayer) {
+                case 0: // Cavolfiori - Resistenza Glaciale
+                    useResistenzaGlaciale();
+                    break;
+                case 1: // Cipolle - Lacrime Corrosive (passiva in battaglia)
+                    addLogEntry('💧 Lacrime Corrosive attive per le prossime battaglie!', 'log-move');
+                    break;
+                case 2: // Carote - Vista Acuta
+                    useVistaAcuta();
+                    break;
+                case 3: // Broccoli - Germogli Selvaggi
+                    useGermogliSelvaggi();
+                    break;
+                case 4: // Pomodori - Polpa Esplosiva (passiva in attacco)
+                    addLogEntry('💥 Polpa Esplosiva attiva per i prossimi attacchi!', 'log-move');
+                    break;
+            }
+
+            currentPlayer.abilityUsed = true;
+            updateDisplay();
+        }
+
+        // Abilità Cavolfiori: Resistenza Glaciale
+        function useResistenzaGlaciale() {
+            const player = gameState.players[gameState.currentPlayer];
+            const damagedTerritories = player.territories.filter(tId => {
+                const territory = gameState.territories[tId];
+                return territory && territory.units < 3; // Considera "danneggiati" i territori con poche unità
+            });
+
+            if (damagedTerritories.length > 0) {
+                const randomTerritory = damagedTerritories[Math.floor(Math.random() * damagedTerritories.length)];
+                gameState.territories[randomTerritory].units++;
+                addLogEntry(`❄️ Resistenza Glaciale: +1 unità rigenerata in ${territoryTypes[randomTerritory].name}!`, 'log-move');
+            } else {
+                addLogEntry('❄️ Resistenza Glaciale: Nessun territorio danneggiato da rigenerare', 'log-move');
+            }
+        }
+
+        // Abilità Carote: Vista Acuta
+        function useVistaAcuta() {
+            const adjacentPlayers = new Set();
+            const currentPlayerTerritories = gameState.players[gameState.currentPlayer].territories;
+
+            currentPlayerTerritories.forEach(tId => {
+                adjacencies[tId].forEach(adjId => {
+                    const adjTerritory = gameState.territories[adjId];
+                    if (adjTerritory && adjTerritory.owner !== gameState.currentPlayer) {
+                        adjacentPlayers.add(adjTerritory.owner);
+                    }
+                });
+            });
+
+            let infoText = '👁️ Vista Acuta rivela:\n';
+            adjacentPlayers.forEach(playerIndex => {
+                const player = gameState.players[playerIndex];
+                infoText += `• ${player.name}: ${player.territories.length} territori, Leader: ${player.leader}\n`;
+            });
+
+            addLogEntry(infoText, 'log-move');
+        }
+
+        // Abilità Broccoli: Germogli Selvaggi
+        function useGermogliSelvaggi() {
+            const player = gameState.players[gameState.currentPlayer];
+            const fertileTerritories = player.territories.filter(tId =>
+                territoryTypes[tId] && (territoryTypes[tId].type === 'fertile' || territoryTypes[tId].type === 'normal')
+            );
+
+            if (fertileTerritories.length > 0) {
+                const randomTerritory = fertileTerritories[Math.floor(Math.random() * fertileTerritories.length)];
+                gameState.territories[randomTerritory].units++;
+                addLogEntry(`🌱 Germogli Selvaggi: +1 unità evocata in ${territoryTypes[randomTerritory].name}!`, 'log-move');
+            }
+        }
+        function addEventListeners() {
+            document.querySelectorAll('.territory').forEach(territory => {
+                territory.addEventListener('click', handleTerritoryClick);
+            });
+        }
+
+        // Gestisce il click su un territorio
+        function handleTerritoryClick(event) {
+            const territoryId = event.target.id;
+            const territory = gameState.territories[territoryId];
+
+            if (gameState.phase === 'reinforcement') {
+                if (territory && territory.owner === gameState.currentPlayer && gameState.reinforcements > 0) {
+                    territory.units++;
+                    gameState.reinforcements--;
+                    addLogEntry(`➕ Aggiunta 1 unità a ${territoryId.toUpperCase()}`, 'log-move');
+                    updateDisplay();
+                }
+            } else if (gameState.phase === 'attack') {
+                if (!gameState.selectedTerritory) {
+                    // Selezione territorio di partenza
+                    if (territory && territory.owner === gameState.currentPlayer && territory.units > 1) {
+                        selectTerritory(territoryId);
+                    }
+                } else if (gameState.selectedTerritory === territoryId) {
+                    // Deseleziona
+                    deselectTerritory();
+                } else {
+                    // Attacco
+                    if (territory && territory.owner !== gameState.currentPlayer &&
+                        adjacencies[gameState.selectedTerritory].includes(territoryId)) {
+                        performAttack(gameState.selectedTerritory, territoryId);
+                    }
+                }
+            }
+        }
+
+        // Seleziona un territorio
+        function selectTerritory(territoryId) {
+            deselectTerritory();
+            gameState.selectedTerritory = territoryId;
+            document.getElementById(territoryId).classList.add('selected');
+
+            // Evidenzia territori attaccabili
+            adjacencies[territoryId].forEach(adjId => {
+                const adjTerritory = gameState.territories[adjId];
+                if (adjTerritory && adjTerritory.owner !== gameState.currentPlayer) {
+                    document.getElementById(adjId).classList.add('attackable');
+                }
+            });
+        }
+
+        // Deseleziona territorio
+        function deselectTerritory() {
+            if (gameState.selectedTerritory) {
+                document.getElementById(gameState.selectedTerritory).classList.remove('selected');
+                gameState.selectedTerritory = null;
+            }
+            document.querySelectorAll('.attackable').forEach(el => {
+                el.classList.remove('attackable');
+            });
+        }
+
+        // Esegue un attacco con abilità speciali
+        function performAttack(fromId, toId) {
+            const attacker = gameState.territories[fromId];
+            const defender = gameState.territories[toId];
+            const attackerPlayer = gameState.players[gameState.currentPlayer];
+            const defenderPlayer = gameState.players[defender.owner];
+
+            // Calcola modificatori di attacco/difesa
+            let attackBonus = 0;
+            let defenseBonus = 0;
+
+            // Bonus/malus fazioni
+            const relations = factionRelations[gameState.currentPlayer];
+            if (relations.weakness && relations.weakness.includes(defender.owner)) {
+                attackBonus -= 1;
+                addLogEntry(`⚠️ ${attackerPlayer.name} subisce malus vs ${defenderPlayer.name}`, 'log-attack');
+            }
+
+            // Bonus Cipolle: +1 attacco vs non-bulbo
+            if (gameState.currentPlayer === 1 && !factionRelations[defender.owner].bulb) {
+                attackBonus += 1;
+                addLogEntry(`🧅 Bonus Cipolle: +1 attacco vs non-bulbo`, 'log-attack');
+            }
+
+            // Bonus Pomodori: +1 attacco se 5+ unità
+            if (gameState.currentPlayer === 4 && attacker.units >= 5) {
+                attackBonus += 1;
+                addLogEntry(`🍅 Bonus Pomodori: +1 attacco per grande esercito`, 'log-attack');
+            }
+
+            // Bonus territorio
+            const defenderTerritoryType = territoryTypes[toId];
+            if (defenderTerritoryType) {
+                // Bonus Cavolfiori in montagna
+                if (defender.owner === 0 && defenderTerritoryType.type === 'mountain') {
+                    defenseBonus += 1;
+                    addLogEntry(`❄️ Bonus Cavolfiori: +1 difesa in montagna`, 'log-defend');
+                }
+
+                // Malus Pomodori in secco/montagna
+                if (gameState.currentPlayer === 4 &&
+                    (defenderTerritoryType.type === 'dry' || defenderTerritoryType.type === 'mountain')) {
+                    defenseBonus += 1;
+                    addLogEntry(`🍅 Malus Pomodori: territorio sfavorevole`, 'log-attack');
+                }
+            }
+
+            // Simulazione battaglia con modificatori
+            let attackerDice = Math.floor(Math.random() * 6) + 1 + attackBonus;
+            let defenderDice = Math.floor(Math.random() * 6) + 1 + defenseBonus;
+
+            // Abilità Cipolle: Lacrime Corrosive (nemico perde 1 dado)
+            if (gameState.currentPlayer === 1 && attackerPlayer.abilityUsed) {
+                defenderDice = Math.max(1, defenderDice - 1);
+                addLogEntry(`💧 Lacrime Corrosive: dado nemico ridotto!`, 'log-attack');
+            }
+
+            addLogEntry(`⚔️ ${territoryTypes[fromId].name} (${attackerDice}) attacca ${territoryTypes[toId].name} (${defenderDice})`, 'log-attack');
+
+            if (attackerDice > defenderDice) {
+                // Attaccante vince
+                defender.units--;
+                addLogEntry(`💥 ${territoryTypes[toId].name} perde 1 unità!`, 'log-attack');
+
+                // Abilità Pomodori: Polpa Esplosiva
+                if (gameState.currentPlayer === 4 && attackerPlayer.abilityUsed) {
+                    // Danneggia territori adiacenti nemici
+                    adjacencies[toId].forEach(adjId => {
+                        const adjTerritory = gameState.territories[adjId];
+                        if (adjTerritory && adjTerritory.owner !== gameState.currentPlayer && adjTerritory.units > 1) {
+                            adjTerritory.units--;
+                            addLogEntry(`💥 Polpa Esplosiva colpisce ${territoryTypes[adjId].name}!`, 'log-attack');
+                        }
+                    });
+                }
+
+                if (defender.units <= 0) {
+                    // Territorio conquistato
+                    defender.owner = gameState.currentPlayer;
+                    defender.units = Math.max(1, attacker.units - 1);
+                    attacker.units = 1;
+
+                    // Aggiorna liste territori
+                    defenderPlayer.territories = defenderPlayer.territories.filter(t => t !== toId);
+                    attackerPlayer.territories.push(toId);
+
+                    addLogEntry(`🏆 ${territoryTypes[toId].name} conquistato dai ${attackerPlayer.name}!`, 'log-attack');
+
+                    // Cambia colore del territorio
+                    document.getElementById(toId).className = `territory ${getFactionClass(gameState.currentPlayer)}`;
+                }
+            } else {
+                // Difensore vince
+                attacker.units--;
+                addLogEntry(`🛡️ ${territoryTypes[fromId].name} perde 1 unità!`, 'log-defend');
+            }
+
+            // Abilità Broccoli: Crescita Rapida (passiva)
+            if (defender.owner === 3 && defender.units === 1) {
+                defender.units++;
+                addLogEntry(`🌱 Crescita Rapida: +1 unità rigenerata automaticamente!`, 'log-defend');
+            }
+
+            deselectTerritory();
+            updateDisplay();
+        }
+
+        // Ottiene la classe CSS della fazione
+        function getFactionClass(playerIndex) {
+            const classes = ['cavolfiori', 'cipolle', 'carote', 'broccoli', 'pomodori'];
+            return classes[playerIndex] || 'neutrale';
+        }
+
+        // Piazza rinforzi automaticamente
+        function placeReinforcements() {
+            const playerTerritories = gameState.players[gameState.currentPlayer].territories
+                .filter(tId => gameState.territories[tId]);
+
+            while (gameState.reinforcements > 0 && playerTerritories.length > 0) {
+                const randomTerritory = playerTerritories[Math.floor(Math.random() * playerTerritories.length)];
+                gameState.territories[randomTerritory].units++;
+                gameState.reinforcements--;
+            }
+
+            addLogEntry(`🎯 Rinforzi piazzati automaticamente`, 'log-move');
+            updateDisplay();
+        }
+
+        // Passa alla fase successiva
+        function nextPhase() {
+            if (gameState.phase === 'reinforcement') {
+                gameState.phase = 'attack';
+                document.getElementById('attack-btn').disabled = false;
+            } else if (gameState.phase === 'attack') {
+                gameState.phase = 'move';
+                document.getElementById('end-turn').disabled = false;
+            }
+
+            deselectTerritory();
+            updateDisplay();
+        }
+
+        // Attiva/disattiva modalità attacco
+        function toggleAttackMode() {
+            gameState.attackMode = !gameState.attackMode;
+            document.getElementById('attack-btn').textContent =
+                gameState.attackMode ? 'Esci da Attacco' : 'Modalità Attacco';
+        }
+
+        // Fine turno con reset abilità
+        function endTurn() {
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+            gameState.phase = 'reinforcement';
+            gameState.turn++;
+
+            // Reset abilità per il nuovo giocatore
+            gameState.players[gameState.currentPlayer].abilityUsed = false;
+
+            // Abilità Broccoli: Crescita Rapida (fine turno)
+            if (gameState.currentPlayer === 3) {
+                const player = gameState.players[3];
+                player.territories.forEach(tId => {
+                    const territory = gameState.territories[tId];
+                    if (territory && territory.units === 1) {
+                        territory.units++;
+                        addLogEntry(`🌱 Crescita Rapida: +1 unità in ${territoryTypes[tId].name}`, 'log-move');
+                    }
+                });
+            }
+
+            gameState.reinforcements = calculateReinforcements(gameState.currentPlayer);
+
+            deselectTerritory();
+
+            // Reset bottoni
+            document.getElementById('attack-btn').disabled = true;
+            document.getElementById('end-turn').disabled = true;
+
+            addLogEntry(`🔄 Turno ${gameState.turn}: ${gameState.players[gameState.currentPlayer].name}`, 'log-move');
+            updateDisplay();
+        }
+
+        // Aggiunge entry al log
+        function addLogEntry(message, className = '') {
+            const logContent = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.textContent = message;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // Aggiorna il display
+        function updateDisplay() {
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+
+            // Aggiorna info giocatore corrente
+            document.getElementById('player-name').textContent = currentPlayer.name;
+            document.getElementById('player-color').style.background = currentPlayer.color;
+            document.getElementById('current-phase').textContent =
+                gameState.phase === 'reinforcement' ? 'Rinforzi' :
+                    gameState.phase === 'attack' ? 'Attacco' : 'Movimento';
+
+            // Aggiorna info fazione dettagliate
+            document.getElementById('faction-name').textContent = `Clan dei ${currentPlayer.name}`;
+            document.getElementById('leader-name').textContent = currentPlayer.leader;
+            document.getElementById('ability-name').textContent = currentPlayer.ability;
+            document.getElementById('ability-desc').textContent = currentPlayer.abilityDescription;
+            document.getElementById('faction-bonus').textContent = currentPlayer.bonus;
+            document.getElementById('faction-weakness').textContent = currentPlayer.weakness;
+
+            document.getElementById('territory-count').textContent = currentPlayer.territories.length;
+            document.getElementById('reinforcements').textContent = gameState.reinforcements;
+
+            // Abilita/disabilita bottone abilità leader
+            const abilityBtn = document.getElementById('leader-ability');
+            abilityBtn.disabled = currentPlayer.abilityUsed;
+            abilityBtn.textContent = currentPlayer.abilityUsed ? '✅ Abilità Usata' : '🌟 Usa Abilità Leader';
+
+            // Aggiorna visualizzazione unità sui territori
+            const unitCountsGroup = document.getElementById('unit-counts');
+            unitCountsGroup.innerHTML = '';
+
+            Object.entries(gameState.territories).forEach(([territoryId, territory]) => {
+                const territoryElement = document.getElementById(territoryId);
+                if (territoryElement) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('class', 'unit-count');
+                    text.setAttribute('x', territoryElement.getAttribute('cx'));
+                    text.setAttribute('y', parseInt(territoryElement.getAttribute('cy')) + 5);
+                    text.textContent = territory.units;
+                    unitCountsGroup.appendChild(text);
+                }
+            });
+
+            // Abilita/disabilita bottoni
+            document.getElementById('place-reinforcements').disabled =
+                gameState.reinforcements === 0 || gameState.phase !== 'reinforcement';
+            document.getElementById('next-phase').disabled =
+                (gameState.phase === 'reinforcement' && gameState.reinforcements > 0);
+        }
+
+        // Abilita/disabilita bottoni
+        document.getElementById('place-reinforcements').disabled =
+            gameState.reinforcements === 0 || gameState.phase !== 'reinforcement';
+        document.getElementById('next-phase').disabled =
+            (gameState.phase === 'reinforcement' && gameState.reinforcements > 0);
+
+
+        // Inizializza il gioco al caricamento
+        window.addEventListener('load', initGame);
+    </script>
 </body>
 
 </html>
