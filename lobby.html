@@ -192,7 +192,8 @@
             position: relative;
             display: flex;
             align-items: center;
-            gap: 30px;
+            gap: 50px;
+            /* Aumentato il gap */
         }
 
         .enlarged-card {
@@ -200,7 +201,8 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
-            border: 6px solid #ffd700;
+            border: 8px solid #ffd700;
+            /* Bordo più spesso, colore verrà cambiato dinamicamente */
             animation: cardZoomIn 0.5s ease-out;
             position: relative;
         }
@@ -226,21 +228,22 @@
         .card-controls {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-left: 40px;
+            gap: 25px;
+            /* Aumentato il gap tra i pulsanti */
+            margin-left: 0;
+            /* Rimosso margin per evitare sovrapposizioni */
+            align-items: center;
         }
 
         .control-button {
             color: white;
             border: none;
             padding: 15px 25px;
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 60px;
-            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,7 +256,9 @@
         .control-button.select {
             background: linear-gradient(45deg, #4caf50, #66bb6a);
             box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-            width: 200px;
+            width: 220px;
+            /* Larghezza fissa */
+            height: 60px;
             border-radius: 15px;
             font-size: 1.1em;
         }
@@ -265,6 +270,11 @@
         .control-button.close {
             background: linear-gradient(45deg, #757575, #616161);
             box-shadow: 0 8px 25px rgba(117, 117, 117, 0.4);
+            width: 60px;
+            /* Pulsante quadrato */
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5em;
         }
 
         .control-button.close:hover {
@@ -280,7 +290,8 @@
         /* Info carta ingrandita */
         .card-info-panel {
             position: absolute;
-            bottom: -120px;
+            bottom: -140px;
+            /* Spostato più in basso */
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
@@ -288,7 +299,9 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-align: center;
-            min-width: 300px;
+            min-width: 320px;
+            border: 3px solid #ffd700;
+            /* Bordo che cambierà colore */
         }
 
         .enlarged-card-title {
@@ -382,21 +395,22 @@
         @media (max-width: 768px) {
             .enlarged-card-container {
                 flex-direction: column;
-                gap: 20px;
+                gap: 40px;
+                align-items: center;
             }
 
             .enlarged-card {
-                transform: scale(1.3);
+                transform: scale(1.2);
             }
 
             .card-controls {
                 flex-direction: row;
-                margin-left: 0;
+                gap: 30px;
                 justify-content: center;
             }
 
             .control-button.select {
-                width: 150px;
+                width: 180px;
                 font-size: 1em;
             }
 
@@ -404,7 +418,7 @@
                 position: relative;
                 bottom: auto;
                 transform: none;
-                margin-top: 20px;
+                margin-top: 30px;
             }
 
             .card-image {
@@ -413,6 +427,25 @@
 
             .header h1 {
                 font-size: 2.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .enlarged-card {
+                transform: scale(1.0);
+            }
+
+            .enlarged-card-image {
+                width: 240px;
+            }
+
+            .card-controls {
+                gap: 20px;
+            }
+
+            .control-button.select {
+                width: 160px;
+                font-size: 0.9em;
             }
         }
     </style>
@@ -431,7 +464,7 @@
     <div class="cards-container">
         <!-- Carta Cavolfiori -->
         <div class="character-card" data-faction="0" onclick="openCardOverlay(0)">
-            <img src="carta brassius modificata.png" alt="Clan dei Cavolfiori" class="card-image">
+            <img src="Carta generale Brassius.png" alt="Clan dei Cavolfiori" class="card-image">
             <div class="card-info">
                 <div class="card-name">❄️ Clan dei Cavolfiori</div>
             </div>
@@ -481,9 +514,9 @@
     <!-- Overlay per carta ingrandita -->
     <div class="card-overlay-modal" id="card-overlay">
         <div class="enlarged-card-container">
-            <div class="enlarged-card">
+            <div class="enlarged-card" id="enlarged-card">
                 <img id="enlarged-image" class="enlarged-card-image" src="" alt="">
-                <div class="card-info-panel">
+                <div class="card-info-panel" id="card-info-panel">
                     <div class="enlarged-card-title" id="enlarged-title"></div>
                     <div class="enlarged-card-leader" id="enlarged-leader"></div>
                 </div>
@@ -509,15 +542,17 @@
                 name: 'Cavolfiori',
                 emoji: '❄️',
                 color: '#e8d5e8',
+                borderColor: '#FFFDF7',
                 leader: 'Generale Cavolo Brassius',
                 personality: 'Stoici, disciplinati, organizzati in formazioni compatte',
                 fullName: 'Il Clan dei Cavolfiori',
-                image: 'carta brassius modificata.png'
+                image: 'Carta generale Brassius.png'
             },
             {
                 name: 'Cipolle',
                 emoji: '🧅',
                 color: '#d1a3d1',
+                borderColor: '#8e24aa', // Viola
                 leader: 'Duca Cipollotto di Tropea',
                 personality: 'Astuti, diplomatici ma subdoli, maestri dell\'inganno',
                 fullName: 'Repubblica delle Cipolle',
@@ -527,6 +562,7 @@
                 name: 'Carote',
                 emoji: '🥕',
                 color: '#ffb347',
+                borderColor: '#f57c00', // Arancione
                 leader: 'Imperatrice Carota Regina',
                 personality: 'Nobili, tradizionalisti, amanti del lusso sotterraneo',
                 fullName: 'Impero delle Carote',
@@ -536,6 +572,7 @@
                 name: 'Broccoli',
                 emoji: '🥦',
                 color: '#90ee90',
+                borderColor: '#388e3c', // Verde
                 leader: 'Sciamano Broccolo Antico',
                 personality: 'Selvaggi, ambientalisti, connessi con la natura',
                 fullName: 'Tribù dei Broccoli',
@@ -545,6 +582,7 @@
                 name: 'Pomodori',
                 emoji: '🍅',
                 color: '#ff7f7f',
+                borderColor: '#d32f2f', // Rosso
                 leader: 'Generale Pomodoro San Marzano',
                 personality: 'Passionali, aggressivi, amanti delle battaglie frontali',
                 fullName: 'Confederazione dei Pomodori',
@@ -561,6 +599,16 @@
             document.getElementById('enlarged-title').textContent = faction.fullName;
             document.getElementById('enlarged-leader').textContent = `👑 ${faction.leader}`;
 
+            // Cambia il colore del bordo della carta in base alla fazione
+            const enlargedCard = document.getElementById('enlarged-card');
+            const cardInfoPanel = document.getElementById('card-info-panel');
+
+            enlargedCard.style.borderColor = faction.borderColor;
+            enlargedCard.style.boxShadow = `0 25px 70px rgba(0, 0, 0, 0.6), 0 0 40px ${faction.borderColor}60`;
+
+            // Cambia anche il bordo del pannello info
+            cardInfoPanel.style.borderColor = faction.borderColor;
+
             // Mostra overlay
             document.getElementById('card-overlay').classList.add('show');
 
@@ -574,7 +622,7 @@
             // Effetto particelle
             createParticles(faction.emoji);
 
-            console.log(`🔍 Carta ingrandita: ${faction.fullName}`);
+            console.log(`🔍 Carta ingrandita: ${faction.fullName} con bordo ${faction.borderColor}`);
         }
 
         function closeCardOverlay() {
