@@ -2,162 +2,88 @@
 <html lang="it">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Orto Conquista - Territori e Turni</title>
+    <meta charset="UTF-8" />
+    <title>Mappa Orto Conquista</title>
     <style>
         body {
-            font-family: sans-serif;
-            background: #f1f8e9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: #f4fff0;
+            font-family: 'Verdana', sans-serif;
         }
 
         svg {
-            margin-top: 20px;
-            border: 2px solid #444;
-            width: 600px;
-            height: 400px;
+            width: 100%;
+            height: 90vh;
+            border: 2px solid #6b8e23;
+            background: #e2f7d1;
         }
 
         .territory {
-            stroke: #333;
-            stroke-width: 2;
             cursor: pointer;
-            transition: fill 0.2s;
+            transition: fill 0.3s;
         }
 
         .territory:hover {
-            fill-opacity: 0.8;
+            fill-opacity: 0.7;
         }
 
-        text {
-            font-size: 14px;
+        .label {
+            font-size: 12px;
             pointer-events: none;
-            font-weight: bold;
-        }
-
-        #info {
-            margin-top: 10px;
-            font-size: 18px;
-        }
-
-        #endTurn {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #81c784;
-            border: none;
-            cursor: pointer;
+            fill: #333;
         }
     </style>
 </head>
 
 <body>
-    <h1>🥕 Orto Conquista – Versione con Turni</h1>
-    <svg id="map" viewBox="0 0 600 400">
-        <!-- I territori (10 rettangoli semplificati) -->
-        <g id="Territorio1" class="territory" data-name="Cipollandia">
-            <polygon points="50,50 150,50 130,130 30,130" />
-            <text x="80" y="100">0</text>
-        </g>
-        <g id="Territorio2" class="territory" data-name="Carotegna">
-            <polygon points="150,50 250,50 270,130 130,130" />
-            <text x="180" y="100">0</text>
-        </g>
-        <g id="Territorio3" class="territory" data-name="Maisonia">
-            <polygon points="250,50 350,50 370,130 270,130" />
-            <text x="280" y="100">0</text>
-        </g>
-        <g id="Territorio4" class="territory" data-name="Patatistan">
-            <polygon points="350,50 450,50 470,130 370,130" />
-            <text x="380" y="100">0</text>
-        </g>
-        <g id="Territorio5" class="territory" data-name="Zuccalopoli">
-            <polygon points="450,50 550,50 570,130 470,130" />
-            <text x="480" y="100">0</text>
-        </g>
-        <g id="Territorio6" class="territory" data-name="Broccoburgo">
-            <polygon points="50,130 130,130 110,210 30,210" />
-            <text x="70" y="180">0</text>
-        </g>
-        <g id="Territorio7" class="territory" data-name="Spinaciovia">
-            <polygon points="130,130 270,130 250,210 110,210" />
-            <text x="170" y="180">0</text>
-        </g>
-        <g id="Territorio8" class="territory" data-name="Peperonilandia">
-            <polygon points="270,130 370,130 350,210 250,210" />
-            <text x="290" y="180">0</text>
-        </g>
-        <g id="Territorio9" class="territory" data-name="Radicchioland">
-            <polygon points="370,130 470,130 450,210 350,210" />
-            <text x="390" y="180">0</text>
-        </g>
-        <g id="Territorio10" class="territory" data-name="Lattugia City">
-            <polygon points="470,130 570,130 550,210 450,210" />
-            <text x="490" y="180">0</text>
-        </g>
+    <svg viewBox="0 0 800 600">
+        <!-- Cipollandia -->
+        <circle class="territory" id="bulbopoli" cx="80" cy="80" r="40" fill="#c9a0dc" />
+        <circle class="territory" id="tropea" cx="160" cy="60" r="40" fill="#c9a0dc" />
+        <circle class="territory" id="scalogna" cx="120" cy="150" r="40" fill="#c9a0dc" />
+
+        <!-- Carotegna -->
+        <circle class="territory" id="carrot" cx="280" cy="80" r="40" fill="#ffa500" />
+        <circle class="territory" id="orange" cx="360" cy="60" r="40" fill="#ffa500" />
+        <circle class="territory" id="root" cx="320" cy="150" r="40" fill="#ffa500" />
+
+        <!-- Tomatosia -->
+        <circle class="territory" id="sanmarzano" cx="80" cy="450" r="40" fill="#ff6347" />
+        <circle class="territory" id="cherry" cx="140" cy="500" r="40" fill="#ff6347" />
+        <circle class="territory" id="pachino" cx="200" cy="440" r="40" fill="#ff6347" />
+
+        <!-- Broccolandia -->
+        <circle class="territory" id="greenvalley" cx="320" cy="450" r="40" fill="#228b22" />
+        <circle class="territory" id="forest" cx="400" cy="500" r="40" fill="#228b22" />
+        <circle class="territory" id="cavolonero" cx="480" cy="440" r="40" fill="#228b22" />
+
+        <!-- Mercato Centrale -->
+        <circle class="territory" id="bazaar" cx="240" cy="280" r="40" fill="#f4e285" />
+        <circle class="territory" id="seedbank" cx="340" cy="250" r="40" fill="#f4e285" />
+        <circle class="territory" id="compost" cx="300" cy="340" r="40" fill="#f4e285" />
+        <circle class="territory" id="greenhouse" cx="400" cy="300" r="40" fill="#f4e285" />
+
+        <!-- Labels -->
+        <text class="label" x="60" y="80">Bulbopoli</text>
+        <text class="label" x="140" y="60">Tropea Fields</text>
+        <text class="label" x="100" y="150">Scalogna</text>
+
+        <text class="label" x="260" y="80">Carrot City</text>
+        <text class="label" x="340" y="60">Orange County</text>
+        <text class="label" x="300" y="150">Root Deep</text>
+
+        <text class="label" x="50" y="450">San Marzano</text>
+        <text class="label" x="110" y="510">Cherry Valley</text>
+        <text class="label" x="180" y="440">Pachino Coast</text>
+
+        <text class="label" x="300" y="450">Green Valley</text>
+        <text class="label" x="380" y="500">Broccoli Forest</text>
+        <text class="label" x="460" y="440">Cavolo Nero</text>
+
+        <text class="label" x="220" y="280">Grand Bazaar</text>
+        <text class="label" x="320" y="250">Seed Bank</text>
+        <text class="label" x="280" y="340">Compost Works</text>
+        <text class="label" x="380" y="300">Greenhouse Labs</text>
     </svg>
-
-    <div id="info">Turno: <strong id="currentPlayer">Player 1</strong></div>
-    <button id="endTurn">Fine turno</button>
-
-    <script>
-        const players = ['Player 1', 'Player 2'];
-        const playerColors = { 'Player 1': '#e57373', 'Player 2': '#64b5f6' };
-        let currentPlayerIndex = 0;
-        let selected = null;
-
-        const territories = {};
-
-        // Inizializzazione territori
-        document.querySelectorAll('.territory').forEach((el, index) => {
-            const id = el.id;
-            const text = el.querySelector('text');
-            const polygon = el.querySelector('polygon');
-
-            // Stato iniziale: 5 territori a testa
-            const owner = index < 5 ? 'Player 1' : 'Player 2';
-            const units = Math.floor(Math.random() * 4) + 3; // da 3 a 6
-
-            territories[id] = {
-                id,
-                name: el.dataset.name,
-                owner,
-                units,
-                polygon,
-                textEl: text
-            };
-
-            polygon.setAttribute('fill', playerColors[owner]);
-            text.textContent = units;
-
-            polygon.addEventListener('click', () => handleClick(id));
-        });
-
-        function handleClick(id) {
-            const territory = territories[id];
-            const currentPlayer = players[currentPlayerIndex];
-
-            if (territory.owner === currentPlayer) {
-                selected = territory;
-                document.getElementById('info').innerHTML = `Hai selezionato <strong>${territory.name}</strong> (${territory.units} unità)`;
-            } else if (selected && selected.id !== id) {
-                document.getElementById('info').innerHTML =
-                    `Simulazione attacco da <strong>${selected.name}</strong> (${selected.units}) a <strong>${territory.name}</strong> (${territory.units})<br><em>(logica attacco da implementare)</em>`;
-                selected = null;
-            } else {
-                document.getElementById('info').textContent = 'Non puoi selezionare questo territorio.';
-            }
-        }
-
-        document.getElementById('endTurn').addEventListener('click', () => {
-            selected = null;
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-            document.getElementById('currentPlayer').textContent = players[currentPlayerIndex];
-            document.getElementById('info').textContent = `Turno: ${players[currentPlayerIndex]}`;
-        });
-    </script>
 </body>
 
 </html>
