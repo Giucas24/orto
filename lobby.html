@@ -3,8 +3,10 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>🥕 Orto Conquista - Scegli la Tua Fazione</title>
+    <title>🏰 Orto Conquista - Scegli la Tua Fazione</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,127 +14,220 @@
         }
 
         body {
-            background: linear-gradient(135deg, #2e7d32, #66bb6a, #a5d6a7);
-            font-family: 'Comic Sans MS', 'Verdana', sans-serif;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #2c1810, #8b4513, #a0522d);
+            font-family: 'Cinzel', serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            background-attachment: fixed;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="parchment" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="%23d4af37" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23parchment)"/></svg>');
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .header {
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
+            background:
+                linear-gradient(145deg, #f4e4bc, #e6d3a3),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(139, 69, 19, 0.05) 2px, rgba(139, 69, 19, 0.05) 4px);
+            padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 2px 10px rgba(212, 175, 55, 0.3),
+                0 0 0 3px #8b4513,
+                0 0 0 8px #d4af37;
             margin-bottom: 40px;
             backdrop-filter: blur(10px);
-            transition: filter 0.3s ease;
-        }
-
-        .header h1 {
-            font-size: 3.5em;
-            color: #1b5e20;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.3em;
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .instruction {
-            text-align: center;
-            color: white;
-            font-size: 1.5em;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(5px);
-            transition: filter 0.3s ease;
-        }
-
-        .cards-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-            transition: filter 0.3s ease;
-        }
-
-        .character-card {
+            transition: all 0.3s ease;
             position: relative;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 4px solid transparent;
+            border: 5px solid #8b4513;
         }
 
-        .character-card:hover {
-            transform: translateY(-15px) scale(1.05);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .character-card.selected {
-            transform: translateY(-10px) scale(1.08);
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
-            border-color: #ffd700;
-        }
-
-        .character-card.selected::after {
-            content: '✓';
+        .header::before {
+            content: '⚜️';
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: #333;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #d4af37, #b8860b);
             width: 40px;
             height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
             font-size: 20px;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
-            animation: pulse 2s infinite;
+            border: 3px solid #8b4513;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        @keyframes pulse {
+        .header h1 {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 3.8em;
+            color: #8b4513;
+            text-shadow:
+                3px 3px 0px #d4af37,
+                6px 6px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+
+        .header p {
+            font-size: 1.4em;
+            color: #654321;
+            font-weight: 600;
+            font-style: italic;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .instruction {
+            text-align: center;
+            color: #f4e4bc;
+            font-size: 1.6em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background:
+                linear-gradient(145deg, rgba(139, 69, 19, 0.9), rgba(101, 67, 33, 0.9));
+            padding: 20px 40px;
+            border-radius: 25px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            border: 3px solid #d4af37;
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, 0.4),
+                inset 0 2px 10px rgba(212, 175, 55, 0.2);
+            font-weight: 600;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .character-card {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow:
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                0 0 0 4px #8b4513,
+                0 0 0 8px #d4af37;
+            border: 6px solid #654321;
+            background: linear-gradient(145deg, #f4e4bc, #e6d3a3);
+        }
+
+        .character-card:hover {
+            transform: translateY(-20px) scale(1.08);
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.6),
+                0 0 0 4px #d4af37,
+                0 0 0 8px #ffd700,
+                0 0 30px rgba(255, 215, 0, 0.5);
+            border-color: #d4af37;
+        }
+
+        .character-card.selected {
+            transform: translateY(-15px) scale(1.12);
+            box-shadow:
+                0 0 50px rgba(255, 215, 0, 0.9),
+                0 25px 60px rgba(0, 0, 0, 0.6),
+                0 0 0 4px #ffd700,
+                0 0 0 8px #ffed4e;
+            border-color: #ffd700;
+            animation: selectedGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes selectedGlow {
+            0% {
+                box-shadow:
+                    0 0 50px rgba(255, 215, 0, 0.9),
+                    0 25px 60px rgba(0, 0, 0, 0.6),
+                    0 0 0 4px #ffd700,
+                    0 0 0 8px #ffed4e;
+            }
+
+            100% {
+                box-shadow:
+                    0 0 70px rgba(255, 215, 0, 1),
+                    0 25px 60px rgba(0, 0, 0, 0.6),
+                    0 0 0 4px #ffed4e,
+                    0 0 0 8px #fff59d;
+            }
+        }
+
+        .character-card.selected::after {
+            content: '⚔️';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: radial-gradient(circle, #ffd700, #ffed4e);
+            color: #8b4513;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 22px;
+            box-shadow:
+                0 6px 20px rgba(255, 215, 0, 0.6),
+                0 0 0 3px #8b4513;
+            animation: crownPulse 2s infinite;
+            border: 2px solid #654321;
+        }
+
+        @keyframes crownPulse {
 
             0%,
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: scale(1) rotate(0deg);
             }
 
             50% {
                 opacity: 0.8;
-                transform: scale(1.1);
+                transform: scale(1.1) rotate(5deg);
             }
         }
 
         .card-image {
-            width: 250px;
+            width: 260px;
             height: auto;
             display: block;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             border-radius: 15px;
+            filter: sepia(20%) contrast(1.1);
         }
 
         .character-card:hover .card-image {
-            filter: brightness(1.1) contrast(1.1);
+            filter: sepia(10%) brightness(1.15) contrast(1.2);
+            transform: scale(1.02);
         }
 
         .card-info {
@@ -140,11 +235,14 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-            color: white;
-            padding: 20px;
+            background:
+                linear-gradient(transparent, rgba(139, 69, 19, 0.95)),
+                linear-gradient(145deg, rgba(244, 228, 188, 0.9), rgba(230, 211, 163, 0.9));
+            color: #f4e4bc;
+            padding: 25px;
             transform: translateY(100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s ease;
+            border-top: 3px solid #d4af37;
         }
 
         .character-card:hover .card-info {
@@ -152,10 +250,13 @@
         }
 
         .card-name {
-            font-size: 1.1em;
-            font-weight: bold;
+            font-size: 1.2em;
+            font-weight: 700;
             margin-bottom: 5px;
             text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            color: #ffd700;
+            font-family: 'MedievalSharp', cursive;
         }
 
         /* Overlay per carta ingrandita */
@@ -165,26 +266,29 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background:
+                radial-gradient(circle at center, rgba(139, 69, 19, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(8px);
         }
 
         .card-overlay-modal.show {
             display: flex;
-            animation: overlayFadeIn 0.4s ease-out;
+            animation: overlayFadeIn 0.5s ease-out;
         }
 
         @keyframes overlayFadeIn {
             from {
                 opacity: 0;
+                backdrop-filter: blur(0px);
             }
 
             to {
                 opacity: 1;
+                backdrop-filter: blur(8px);
             }
         }
 
@@ -192,191 +296,246 @@
             position: relative;
             display: flex;
             align-items: center;
-            gap: 50px;
-            /* Aumentato il gap */
+            gap: 60px;
         }
 
         .enlarged-card {
-            transform: scale(1.5);
-            border-radius: 15px;
+            transform: scale(1.6);
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
-            border: 8px solid #ffd700;
-            /* Bordo più spesso, colore verrà cambiato dinamicamente */
-            animation: cardZoomIn 0.5s ease-out;
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.8),
+                0 0 0 6px #8b4513,
+                0 0 0 12px #d4af37,
+                0 0 50px rgba(212, 175, 55, 0.5);
+            border: 8px solid #654321;
+            animation: cardZoomIn 0.6s ease-out;
             position: relative;
+            background: linear-gradient(145deg, #f4e4bc, #e6d3a3);
         }
 
         @keyframes cardZoomIn {
             from {
-                transform: scale(1);
-                opacity: 0.5;
+                transform: scale(1) rotate(-5deg);
+                opacity: 0.3;
             }
 
             to {
-                transform: scale(1.5);
+                transform: scale(1.6) rotate(0deg);
                 opacity: 1;
             }
         }
 
         .enlarged-card-image {
-            width: 280px;
+            width: 300px;
             height: auto;
             display: block;
+            filter: sepia(15%) contrast(1.15);
         }
 
         .card-controls {
             display: flex;
             flex-direction: column;
-            gap: 25px;
-            /* Aumentato il gap tra i pulsanti */
-            margin-left: 0;
-            /* Rimosso margin per evitare sovrapposizioni */
+            gap: 30px;
             align-items: center;
         }
 
         .control-button {
-            color: white;
+            color: #f4e4bc;
             border: none;
-            padding: 15px 25px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 50px;
+            padding: 18px 30px;
+            font-size: 1.3em;
+            font-weight: 700;
+            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Cinzel', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            border: 3px solid transparent;
         }
 
         .control-button:hover {
-            transform: translateY(-3px) scale(1.05);
+            transform: translateY(-5px) scale(1.05);
         }
 
         .control-button.select {
-            background: linear-gradient(45deg, #4caf50, #66bb6a);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-            width: 220px;
-            /* Larghezza fissa */
-            height: 60px;
-            border-radius: 15px;
-            font-size: 1.1em;
+            background:
+                linear-gradient(145deg, #228b22, #32cd32),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            box-shadow:
+                0 10px 30px rgba(34, 139, 34, 0.5),
+                inset 0 2px 10px rgba(255, 255, 255, 0.2);
+            width: 240px;
+            height: 65px;
+            border: 3px solid #006400;
         }
 
         .control-button.select:hover {
-            box-shadow: 0 12px 35px rgba(76, 175, 80, 0.5);
+            background:
+                linear-gradient(145deg, #32cd32, #7cfc00),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            box-shadow:
+                0 15px 40px rgba(50, 205, 50, 0.6),
+                inset 0 2px 10px rgba(255, 255, 255, 0.3);
+            border-color: #228b22;
         }
 
         .control-button.close {
-            background: linear-gradient(45deg, #757575, #616161);
-            box-shadow: 0 8px 25px rgba(117, 117, 117, 0.4);
-            width: 60px;
-            /* Pulsante quadrato */
-            height: 60px;
+            background:
+                linear-gradient(145deg, #8b4513, #a0522d),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            box-shadow:
+                0 10px 30px rgba(139, 69, 19, 0.5),
+                inset 0 2px 10px rgba(255, 255, 255, 0.2);
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            font-size: 1.5em;
+            font-size: 1.8em;
+            border: 3px solid #654321;
         }
 
         .control-button.close:hover {
-            box-shadow: 0 12px 35px rgba(117, 117, 117, 0.5);
+            background:
+                linear-gradient(145deg, #a0522d, #d2691e),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            box-shadow:
+                0 15px 40px rgba(160, 82, 45, 0.6),
+                inset 0 2px 10px rgba(255, 255, 255, 0.3);
+            border-color: #8b4513;
         }
 
         /* Oscuramento quando modal è aperto */
         .dimmed {
-            filter: brightness(0.3) blur(2px);
+            filter: brightness(0.3) blur(3px);
             pointer-events: none;
         }
 
         /* Info carta ingrandita */
         .card-info-panel {
             position: absolute;
-            bottom: -140px;
-            /* Spostato più in basso */
+            bottom: -160px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background:
+                linear-gradient(145deg, #f4e4bc, #e6d3a3),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(139, 69, 19, 0.05) 2px, rgba(139, 69, 19, 0.05) 4px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.5),
+                inset 0 2px 10px rgba(212, 175, 55, 0.3);
             text-align: center;
-            min-width: 320px;
-            border: 3px solid #ffd700;
-            /* Bordo che cambierà colore */
+            min-width: 350px;
+            border: 4px solid #8b4513;
         }
 
         .enlarged-card-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #1b5e20;
-            margin-bottom: 8px;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #8b4513;
+            margin-bottom: 10px;
+            font-family: 'MedievalSharp', cursive;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .enlarged-card-leader {
-            font-size: 1em;
-            color: #2e7d32;
+            font-size: 1.1em;
+            color: #654321;
             font-style: italic;
+            font-weight: 600;
         }
 
         .start-button {
-            background: linear-gradient(45deg, #4caf50, #66bb6a);
-            color: white;
+            background:
+                linear-gradient(145deg, #228b22, #32cd32),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            color: #f4e4bc;
             border: none;
-            padding: 20px 50px;
-            font-size: 1.8em;
-            font-weight: bold;
-            border-radius: 15px;
+            padding: 25px 60px;
+            font-size: 2em;
+            font-weight: 700;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-            transition: all 0.3s;
+            box-shadow:
+                0 12px 35px rgba(34, 139, 34, 0.5),
+                inset 0 3px 15px rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
             text-transform: uppercase;
             letter-spacing: 2px;
+            font-family: 'Cinzel', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            border: 4px solid #006400;
         }
 
         .start-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.5);
-            background: linear-gradient(45deg, #66bb6a, #81c784);
+            transform: translateY(-8px);
+            box-shadow:
+                0 20px 50px rgba(50, 205, 50, 0.6),
+                inset 0 3px 15px rgba(255, 255, 255, 0.3);
+            background:
+                linear-gradient(145deg, #32cd32, #7cfc00),
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            border-color: #228b22;
         }
 
         .start-button:disabled {
-            background: linear-gradient(45deg, #bdbdbd, #9e9e9e);
+            background:
+                linear-gradient(145deg, #696969, #808080);
             cursor: not-allowed;
             transform: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow:
+                0 6px 20px rgba(0, 0, 0, 0.3),
+                inset 0 2px 8px rgba(255, 255, 255, 0.1);
+            border-color: #2f4f4f;
         }
 
         .selected-info {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            background:
+                linear-gradient(145deg, #f4e4bc, #e6d3a3),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(139, 69, 19, 0.05) 2px, rgba(139, 69, 19, 0.05) 4px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
             text-align: center;
-            min-height: 60px;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                inset 0 2px 10px rgba(212, 175, 55, 0.2);
+            transition: all 0.4s ease;
+            border: 3px solid #8b4513;
         }
 
         .selected-info.show {
-            background: linear-gradient(45deg, #fff3e0, #ffe0b2);
-            border: 3px solid #ff9800;
+            background:
+                linear-gradient(145deg, #fff8e1, #ffecb3),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 152, 0, 0.1) 2px, rgba(255, 152, 0, 0.1) 4px);
+            border: 4px solid #ff9800;
+            box-shadow:
+                0 15px 40px rgba(255, 152, 0, 0.3),
+                inset 0 3px 15px rgba(255, 193, 7, 0.3);
         }
 
         .selected-text {
-            font-size: 1.2em;
-            font-weight: bold;
+            font-size: 1.3em;
+            font-weight: 700;
             color: #e65100;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            font-family: 'Cinzel', serif;
         }
 
-        /* Effetti particellari */
+        /* Effetti particellari medievali */
         .particle {
             position: absolute;
             pointer-events: none;
-            opacity: 0.8;
-            font-size: 24px;
-            animation: particleFloat 3s ease-out forwards;
+            opacity: 0.9;
+            font-size: 28px;
+            animation: particleFloat 4s ease-out forwards;
         }
 
         @keyframes particleFloat {
@@ -386,7 +545,7 @@
             }
 
             100% {
-                transform: translateY(-150px) rotate(360deg) scale(0.5);
+                transform: translateY(-200px) rotate(720deg) scale(0.3);
                 opacity: 0;
             }
         }
@@ -395,18 +554,57 @@
         @media (max-width: 768px) {
             .enlarged-card-container {
                 flex-direction: column;
-                gap: 40px;
+                gap: 50px;
                 align-items: center;
             }
 
             .enlarged-card {
-                transform: scale(1.2);
+                transform: scale(1.3);
             }
 
             .card-controls {
                 flex-direction: row;
-                gap: 30px;
+                gap: 40px;
                 justify-content: center;
+            }
+
+            .control-button.select {
+                width: 200px;
+                font-size: 1.1em;
+            }
+
+            .card-info-panel {
+                position: relative;
+                bottom: auto;
+                transform: none;
+                margin-top: 40px;
+            }
+
+            .card-image {
+                width: 180px;
+            }
+
+            .header h1 {
+                font-size: 2.8em;
+            }
+
+            .instruction {
+                font-size: 1.3em;
+                padding: 15px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .enlarged-card {
+                transform: scale(1.1);
+            }
+
+            .enlarged-card-image {
+                width: 260px;
+            }
+
+            .card-controls {
+                gap: 25px;
             }
 
             .control-button.select {
@@ -414,51 +612,75 @@
                 font-size: 1em;
             }
 
-            .card-info-panel {
-                position: relative;
-                bottom: auto;
-                transform: none;
-                margin-top: 30px;
-            }
-
-            .card-image {
-                width: 150px;
-            }
-
-            .header h1 {
-                font-size: 2.5em;
+            .start-button {
+                font-size: 1.6em;
+                padding: 20px 40px;
             }
         }
 
-        @media (max-width: 480px) {
-            .enlarged-card {
-                transform: scale(1.0);
+        /* Aggiungiamo delle decorazioni medievali */
+        .medieval-decoration {
+            position: fixed;
+            opacity: 0.1;
+            font-size: 4em;
+            color: #d4af37;
+            pointer-events: none;
+            z-index: -1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
             }
 
-            .enlarged-card-image {
-                width: 240px;
+            50% {
+                transform: translateY(-20px) rotate(5deg);
             }
+        }
 
-            .card-controls {
-                gap: 20px;
-            }
+        .medieval-decoration:nth-child(1) {
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
 
-            .control-button.select {
-                width: 160px;
-                font-size: 0.9em;
-            }
+        .medieval-decoration:nth-child(2) {
+            top: 20%;
+            right: 8%;
+            animation-delay: 2s;
+        }
+
+        .medieval-decoration:nth-child(3) {
+            bottom: 15%;
+            left: 10%;
+            animation-delay: 4s;
+        }
+
+        .medieval-decoration:nth-child(4) {
+            bottom: 25%;
+            right: 5%;
+            animation-delay: 1s;
         }
     </style>
 </head>
 
 <body>
+    <!-- Decorazioni medievali di sfondo -->
+    <div class="medieval-decoration">⚔️</div>
+    <div class="medieval-decoration">🏰</div>
+    <div class="medieval-decoration">🛡️</div>
+    <div class="medieval-decoration">👑</div>
+
     <div class="header">
-        <h1>🥕 ORTO CONQUISTA 🥕</h1>
-        <p>La battaglia vegetale più epica del giardino!</p>
+        <h1>🏰 Nursery Conquest 🏰</h1>
+        <p>La battaglia vegetale più epica del regno!</p>
     </div>
 
     <div class="instruction">
-        🎭 Scegli la tua fazione orticola e guida il tuo popolo alla vittoria!
+        🗡️ Scegli la tua nobile casata orticola e conduci il tuo popolo alla gloria!
     </div>
 
     <div class="cards-container">
@@ -480,7 +702,7 @@
 
         <!-- Carta Carote -->
         <div class="character-card" data-faction="2" onclick="openCardOverlay(2)">
-            <img src="Carta generale Brassius.png" alt="Impero delle Carote" class="card-image">
+            <img src="Carta imperatrice carota regina.png" alt="Impero delle Carote" class="card-image">
             <div class="card-info">
                 <div class="card-name">🥕 Impero delle Carote</div>
             </div>
@@ -488,7 +710,7 @@
 
         <!-- Carta Broccoli -->
         <div class="character-card" data-faction="3" onclick="openCardOverlay(3)">
-            <img src="Carta duca Cipollotto di tropea.png" alt="Tribù dei Broccoli" class="card-image">
+            <img src="Carta sciamano broccoli anziano.png" alt="Tribù dei Broccoli" class="card-image">
             <div class="card-info">
                 <div class="card-name">🥦 Tribù dei Broccoli</div>
             </div>
@@ -496,7 +718,7 @@
 
         <!-- Carta Pomodori -->
         <div class="character-card" data-faction="4" onclick="openCardOverlay(4)">
-            <img src="Carta duca Cipollotto di tropea.png" alt="Confederazione dei Pomodori" class="card-image">
+            <img src="Carta generale Pomodoro san marzano.png" alt="Confederazione dei Pomodori" class="card-image">
             <div class="card-info">
                 <div class="card-name">🍅 Confederazione dei Pomodori</div>
             </div>
@@ -504,11 +726,11 @@
     </div>
 
     <div class="selected-info" id="selected-info">
-        <div class="selected-text">Seleziona una fazione per continuare...</div>
+        <div class="selected-text">Seleziona una nobile casata per continuare...</div>
     </div>
 
     <button class="start-button" id="start-game" onclick="startGame()" disabled>
-        🚀 Inizia la Conquista dell'Orto!
+        ⚔️ Inizia la Conquista del Regno!
     </button>
 
     <!-- Overlay per carta ingrandita -->
@@ -527,7 +749,7 @@
                     ✕
                 </button>
                 <button class="control-button select" onclick="selectCurrentCard()">
-                    ✓ Scegli Questa Fazione
+                    ⚔️ Scegli Questa Casata
                 </button>
             </div>
         </div>
@@ -552,7 +774,7 @@
                 name: 'Cipolle',
                 emoji: '🧅',
                 color: '#d1a3d1',
-                borderColor: '#8e24aa', // Viola
+                borderColor: '#8e24aa',
                 leader: 'Duca Cipollotto di Tropea',
                 personality: 'Astuti, diplomatici ma subdoli, maestri dell\'inganno',
                 fullName: 'Repubblica delle Cipolle',
@@ -562,31 +784,31 @@
                 name: 'Carote',
                 emoji: '🥕',
                 color: '#ffb347',
-                borderColor: '#f57c00', // Arancione
+                borderColor: '#f57c00',
                 leader: 'Imperatrice Carota Regina',
                 personality: 'Nobili, tradizionalisti, amanti del lusso sotterraneo',
                 fullName: 'Impero delle Carote',
-                image: 'Carta generale Brassius.png'
+                image: 'Carta imperatrice carota regina.png'
             },
             {
                 name: 'Broccoli',
                 emoji: '🥦',
                 color: '#90ee90',
-                borderColor: '#388e3c', // Verde
+                borderColor: '#388e3c',
                 leader: 'Sciamano Broccolo Antico',
                 personality: 'Selvaggi, ambientalisti, connessi con la natura',
                 fullName: 'Tribù dei Broccoli',
-                image: 'Carta duca Cipollotto di tropea.png'
+                image: 'Carta sciamano broccoli anziano.png'
             },
             {
                 name: 'Pomodori',
                 emoji: '🍅',
                 color: '#ff7f7f',
-                borderColor: '#d32f2f', // Rosso
+                borderColor: '#d32f2f',
                 leader: 'Generale Pomodoro San Marzano',
                 personality: 'Passionali, aggressivi, amanti delle battaglie frontali',
                 fullName: 'Confederazione dei Pomodori',
-                image: 'Carta duca Cipollotto di tropea.png'
+                image: 'Carta generale Pomodoro san marzano.png'
             }
         ];
 
@@ -604,7 +826,11 @@
             const cardInfoPanel = document.getElementById('card-info-panel');
 
             enlargedCard.style.borderColor = faction.borderColor;
-            enlargedCard.style.boxShadow = `0 25px 70px rgba(0, 0, 0, 0.6), 0 0 40px ${faction.borderColor}60`;
+            enlargedCard.style.boxShadow = `
+                0 30px 80px rgba(0, 0, 0, 0.8),
+                0 0 0 6px #8b4513,
+                0 0 0 12px ${faction.borderColor},
+                0 0 50px ${faction.borderColor}80`;
 
             // Cambia anche il bordo del pannello info
             cardInfoPanel.style.borderColor = faction.borderColor;
@@ -619,8 +845,8 @@
             document.querySelector('.selected-info').classList.add('dimmed');
             document.querySelector('#start-game').classList.add('dimmed');
 
-            // Effetto particelle
-            createParticles(faction.emoji);
+            // Effetto particelle medievali
+            createParticles(['⚔️', '🏰', '👑', faction.emoji]);
 
             console.log(`🔍 Carta ingrandita: ${faction.fullName} con bordo ${faction.borderColor}`);
         }
@@ -661,29 +887,29 @@
             selectedInfo.innerHTML = `
                 <div class="selected-text">
                     ${faction.emoji} Hai scelto: <strong>${faction.fullName}</strong><br>
-                    <small>👑 Leader: ${faction.leader}</small>
+                    <small>👑 Sovrano: ${faction.leader}</small>
                 </div>
             `;
 
             // Abilita bottone start
             const startButton = document.getElementById('start-game');
             startButton.disabled = false;
-            startButton.textContent = `🚀 Conquista l'Orto con i ${faction.name}!`;
+            startButton.textContent = `⚔️ Conquista il Regno con i ${faction.name}!`;
 
-            // Effetto di conferma
-            createParticles(faction.emoji, 25);
+            // Effetto di conferma con particelle medievali
+            createParticles(['⚔️', '🏰', '👑', faction.emoji, '🛡️'], 30);
 
             console.log(`✅ SELEZIONATO: ${faction.emoji} ${faction.name} - ${faction.leader}`);
         }
 
-        function createParticles(emoji, count = 15) {
+        function createParticles(emojis, count = 20) {
             for (let i = 0; i < count; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                particle.textContent = emoji;
+                particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 1 + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
 
                 document.body.appendChild(particle);
 
@@ -691,7 +917,7 @@
                     if (particle.parentNode) {
                         particle.remove();
                     }
-                }, 4000);
+                }, 5000);
             }
         }
 
@@ -700,10 +926,14 @@
 
             const faction = factionData[selectedFaction];
 
-            // Effetto di transizione
-            document.body.style.transition = 'all 1s ease-out';
+            // Effetto di transizione medievale
+            document.body.style.transition = 'all 1.2s ease-out';
             document.body.style.transform = 'scale(0.9)';
-            document.body.style.opacity = '0.5';
+            document.body.style.opacity = '0.4';
+            document.body.style.filter = 'sepia(50%)';
+
+            // Particelle di celebrazione
+            createParticles(['⚔️', '🏰', '👑', '🛡️', '🏆'], 50);
 
             setTimeout(() => {
                 // Salva la scelta del giocatore per il gioco principale
@@ -711,13 +941,13 @@
                 localStorage.setItem('playerName', faction.name);
                 localStorage.setItem('selectedLeader', faction.leader);
 
-                alert(`🎉 Perfetto! Hai scelto i ${faction.name}!\n\n👑 Leader: ${faction.leader}\n🎭 ${faction.personality}\n\n🚀 Ora puoi procedere al gioco principale!`);
+                alert(`🏰 Eccellente! Hai scelto i ${faction.name}!\n\n👑 Sovrano: ${faction.leader}\n🎭 ${faction.personality}\n\n⚔️ Ora puoi procedere alla conquista del regno!`);
 
                 // Qui in futuro collegherai al gioco vero:
                 // window.location.href = 'orto-conquista-game.html';
 
                 location.reload();
-            }, 1000);
+            }, 1200);
         }
 
         // Controlli da tastiera
@@ -748,9 +978,9 @@
                 });
                 selectedFaction = null;
                 document.getElementById('selected-info').classList.remove('show');
-                document.getElementById('selected-info').innerHTML = '<div class="selected-text">Seleziona una fazione per continuare...</div>';
+                document.getElementById('selected-info').innerHTML = '<div class="selected-text">Seleziona una nobile casata per continuare...</div>';
                 document.getElementById('start-game').disabled = true;
-                document.getElementById('start-game').textContent = '🚀 Inizia la Conquista dell\'Orto!';
+                document.getElementById('start-game').textContent = '⚔️ Inizia la Conquista del Regno!';
             }
         });
 
@@ -761,20 +991,27 @@
             }
         });
 
-        // Messaggio di benvenuto
+        // Messaggio di benvenuto medievale
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                console.log('🎮 Benvenuto in Orto Conquista! Clicca su una carta per vederla in dettaglio!');
+                console.log('🏰 Benvenuto nel regno di Orto Conquista! Clicca su una carta per esaminare la casata!');
             }, 1000);
         });
 
-        // Animazione di ingresso
+        // Animazione di ingresso con effetto pergamena
         window.addEventListener('load', () => {
             document.body.style.opacity = '0';
+            document.body.style.transform = 'scale(0.95)';
             setTimeout(() => {
-                document.body.style.transition = 'all 1s ease-out';
+                document.body.style.transition = 'all 1.5s ease-out';
                 document.body.style.opacity = '1';
-            }, 100);
+                document.body.style.transform = 'scale(1)';
+
+                // Particelle di benvenuto
+                setTimeout(() => {
+                    createParticles(['⚔️', '🏰', '👑', '🛡️'], 15);
+                }, 800);
+            }, 200);
         });
     </script>
 </body>
