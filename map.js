@@ -102,54 +102,49 @@ function drawAncientSea() {
     ctx.globalAlpha = 1;
 }
 
-// Funzione per generare un confine condiviso irregolare tra due territori
-function generateSharedBorder(startX, startY, endX, endY, roughness = 0.3) {
+// Funzione per generare forma organica
+function generateOrganicShape(centerX, centerY, baseRadius) {
     const points = [];
-    const segments = 8 + Math.floor(Math.random() * 4); // 8-12 segmenti
+    const numPoints = 12 + Math.floor(Math.random() * 8);
 
-    for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        const x = startX + (endX - startX) * t;
-        const y = startY + (endY - startY) * t;
+    for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * Math.PI * 2;
+        let variance = 0.6 + Math.random() * 0.8;
 
-        // Aggiungi variazione perpendicolare al confine
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const perpX = -dy / length;
-        const perpY = dx / length;
+        const roughness = Math.sin(angle * 4) * 0.2 + Math.cos(angle * 7) * 0.15;
+        variance += roughness;
 
-        // Variazione casuale ma coerente (usando sin per smoothness)
-        const variation = Math.sin(t * Math.PI * 4 + Math.random()) * roughness * 30;
+        const radius = baseRadius * variance;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
 
-        points.push({
-            x: x + perpX * variation,
-            y: y + perpY * variation
-        });
+        points.push({ x, y });
     }
 
     return points;
 }
 
-// Funzione per disegnare territorio con confini specifici
-function drawDefinedTerritory(points, color, name) {
+// Funzione per disegnare territorio organico
+function drawOrganicTerritory(centerX, centerY, radius, color, name) {
+    const points = generateOrganicShape(centerX, centerY, radius);
+
     ctx.save();
 
     // Disegna il territorio
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
-
     for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+        const currentPoint = points[i];
+        const nextPoint = points[(i + 1) % points.length];
+        const controlX = (currentPoint.x + nextPoint.x) / 2;
+        const controlY = (currentPoint.y + nextPoint.y) / 2;
+
+        ctx.quadraticCurveTo(currentPoint.x, currentPoint.y, controlX, controlY);
     }
     ctx.closePath();
 
-    // Calcola il centro per il gradiente
-    const centerX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
-    const centerY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
-
     // Gradiente per profondità
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 80);
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
     gradient.addColorStop(0, color.light);
     gradient.addColorStop(0.7, color.medium);
     gradient.addColorStop(1, color.dark);
@@ -157,24 +152,20 @@ function drawDefinedTerritory(points, color, name) {
     ctx.fillStyle = gradient;
     ctx.fill();
 
-    // Bordo del territorio
+    // Bordo
     ctx.strokeStyle = color.border;
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // Texture interna
-    ctx.globalAlpha = 0.2;
-    for (let i = 0; i < 20; i++) {
+    ctx.globalAlpha = 0.3;
+    for (let i = 0; i < 15; i++) {
         ctx.fillStyle = color.dark;
         const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 60;
+        const distance = Math.random() * radius * 0.7;
         const x = centerX + Math.cos(angle) * distance;
         const y = centerY + Math.sin(angle) * distance;
-
-        // Verifica se il punto è dentro il territorio
-        if (isPointInPolygon({ x, y }, points)) {
-            ctx.fillRect(x, y, 1 + Math.random() * 2, 1 + Math.random() * 2);
-        }
+        ctx.fillRect(x, y, 1 + Math.random() * 2, 1 + Math.random() * 2);
     }
 
     ctx.globalAlpha = 1;
@@ -187,52 +178,6 @@ function drawDefinedTerritory(points, color, name) {
     ctx.fillText(name, centerX, centerY + 5);
 
     return { x: centerX, y: centerY };
-}
-
-// Funzione helper per verificare se un punto è dentro un poligono
-function isPointInPolygon(point, polygon) {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        if (((polygon[i].y > point.y) !== (polygon[j].y > point.y)) &&
-            (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
-            inside = !inside;
-        }
-    }
-    return inside;
-}
-
-// Funzione per creare i confini dell'isola principale irregolari
-function createIslandBorders() {
-    const borders = {};
-
-    // Confini esterni dell'isola (in senso orario)
-    borders.northCoast = generateSharedBorder(200, 120, 800, 100, 0.5);
-    borders.eastCoast = generateSharedBorder(800, 100, 850, 600, 0.6);
-    borders.southCoast = generateSharedBorder(850, 600, 150, 650, 0.5);
-    borders.westCoast = generateSharedBorder(150, 650, 200, 120, 0.4);
-
-    // Confini interni condivisi tra territori
-    // Linea verticale principale (divide est-ovest)
-    borders.centralVertical = generateSharedBorder(500, 150, 480, 600, 0.4);
-
-    // Linee orizzontali principali
-    borders.northHorizontal = generateSharedBorder(200, 250, 500, 240, 0.3);
-    borders.centerHorizontal = generateSharedBorder(150, 400, 850, 380, 0.4);
-    borders.southHorizontal = generateSharedBorder(200, 520, 480, 500, 0.3);
-
-    // Confini secondari
-    borders.nwDivider = generateSharedBorder(200, 250, 350, 400, 0.3);
-    borders.neDivider = generateSharedBorder(500, 240, 650, 380, 0.3);
-    borders.swDivider = generateSharedBorder(200, 520, 350, 400, 0.3);
-    borders.seDivider = generateSharedBorder(480, 500, 650, 380, 0.3);
-
-    // Confini del lago centrale
-    borders.lakeOuter = generateSharedBorder(450, 320, 550, 320, 0.2).map(p => ({
-        x: 500 + (p.x - 500) * 0.8,
-        y: 380 + (p.y - 380) * 0.6
-    }));
-
-    return borders;
 }
 
 // Funzione per disegnare il lago centrale che circonda i territori centrali
@@ -673,45 +618,6 @@ function drawMap() {
     drawVegetation(centers.broccoliForest.x, centers.broccoliForest.y + 15, 'tree');
     drawVegetation(centers.broccoliForest.x - 5, centers.broccoliForest.y + 5, 'tree');
 
-    // Aggiungi edifici e vegetazione
-    drawBuilding(centers.bulbopoli.x, centers.bulbopoli.y, 'house');
-    drawVegetation(centers.bulbopoli.x - 15, centers.bulbopoli.y - 15, 'crop');
-
-    drawBuilding(centers.tropeaFields.x, centers.tropeaFields.y, 'house');
-    drawVegetation(centers.tropeaFields.x - 10, centers.tropeaFields.y - 15, 'crop');
-    drawVegetation(centers.tropeaFields.x + 10, centers.tropeaFields.y - 15, 'crop');
-
-    drawVegetation(centers.scalognaValley.x, centers.scalognaValley.y - 10, 'tree');
-    drawVegetation(centers.scalognaValley.x + 15, centers.scalognaValley.y + 15, 'tree');
-
-    drawBuilding(centers.carrotCity.x, centers.carrotCity.y, 'tower');
-    drawBuilding(centers.carrotCity.x - 15, centers.carrotCity.y - 15, 'house');
-    drawBuilding(centers.carrotCity.x + 15, centers.carrotCity.y - 15, 'house');
-
-    drawBuilding(centers.orangeCounty.x, centers.orangeCounty.y, 'house');
-    drawVegetation(centers.orangeCounty.x - 15, centers.orangeCounty.y - 15, 'crop');
-
-    drawVegetation(centers.rootDeep.x - 10, centers.rootDeep.y - 15, 'crop');
-    drawVegetation(centers.rootDeep.x + 10, centers.rootDeep.y - 15, 'crop');
-
-    drawVegetation(centers.sanMarzano.x - 10, centers.sanMarzano.y - 10, 'tomato');
-    drawVegetation(centers.sanMarzano.x + 5, centers.sanMarzano.y - 5, 'tomato');
-    drawVegetation(centers.sanMarzano.x + 10, centers.sanMarzano.y + 5, 'tomato');
-
-    drawVegetation(centers.cherryValley.x - 10, centers.cherryValley.y - 10, 'tomato');
-    drawVegetation(centers.cherryValley.x + 10, centers.cherryValley.y - 10, 'tomato');
-
-    drawVegetation(centers.pachinoCoast.x, centers.pachinoCoast.y - 10, 'tomato');
-
-    drawVegetation(centers.greenValley.x - 10, centers.greenValley.y - 15, 'tree');
-    drawVegetation(centers.greenValley.x + 10, centers.greenValley.y - 15, 'tree');
-    drawVegetation(centers.greenValley.x, centers.greenValley.y + 15, 'tree');
-
-    drawVegetation(centers.broccoliForest.x - 10, centers.broccoliForest.y - 15, 'tree');
-    drawVegetation(centers.broccoliForest.x + 10, centers.broccoliForest.y - 15, 'tree');
-    drawVegetation(centers.broccoliForest.x, centers.broccoliForest.y + 15, 'tree');
-    drawVegetation(centers.broccoliForest.x - 5, centers.broccoliForest.y + 5, 'tree');
-
     drawVegetation(centers.cavoloNero.x - 10, centers.cavoloNero.y - 15, 'crop');
     drawVegetation(centers.cavoloNero.x + 10, centers.cavoloNero.y - 15, 'crop');
 
@@ -720,68 +626,57 @@ function drawMap() {
     drawBuilding(centers.compostWorks.x, centers.compostWorks.y, 'house');
     drawBuilding(centers.greenhouseLabs.x, centers.greenhouseLabs.y, 'house');
 
-    // Ponti che collegano i territori centrali alla terraferma principale
-    drawBridge(430, 340, 380, 350);  // Da Grand Bazaar verso ovest
-    drawBridge(520, 340, 570, 330);  // Da Seed Bank verso est
-    drawBridge(470, 320, 470, 280);  // Verso nord
-    drawBridge(480, 410, 480, 450);  // Verso sud
+    // Ponti che collegano l'isola centrale alla terraferma
+    drawBridge(420, 350, 370, 370);  // Verso ovest (Tomatosia)
+    drawBridge(580, 350, 630, 360);  // Verso est (Broccolandia)
+    drawBridge(500, 300, 500, 250);  // Verso nord (Carotegna)
+    drawBridge(500, 410, 480, 460);  // Verso sud (collegamento)
 
-    // Strade principali che seguono i confini naturali
-    drawRoad(300, 200, 600, 180);   // Strada nord
-    drawRoad(200, 350, 400, 380);   // Strada ovest verso centro
-    drawRoad(600, 380, 750, 400);   // Strada est
-    drawRoad(350, 550, 650, 520);   // Strada sud
+    // Strade organiche che seguono i confini naturali
+    drawRoad(300, 200, 520, 220);  // Cipollandia-Carotegna
+    drawRoad(250, 350, 370, 370);  // Verso ponte ovest
+    drawRoad(630, 360, 680, 430);  // Dal ponte est verso Broccolandia
+    drawRoad(350, 480, 580, 500);  // Tomatosia-Broccolandia
 
-    // Nomi delle regioni
+    // Nomi delle regioni con posizionamento migliore
     ctx.font = 'bold 18px serif';
     ctx.fillStyle = '#6b4e71';
     ctx.globalAlpha = 0.8;
     ctx.textAlign = 'center';
-    ctx.fillText('CIPOLLANDIA', 320, 80);
+    ctx.fillText('CIPOLLANDIA', 290, 100);
 
     ctx.fillStyle = '#8b5a2b';
-    ctx.fillText('CAROTEGNA', 680, 80);
+    ctx.fillText('CAROTEGNA', 640, 100);
 
     ctx.fillStyle = '#8b2635';
-    ctx.fillText('TOMATOSIA', 220, 320);
+    ctx.fillText('TOMATOSIA', 270, 380);
 
     ctx.fillStyle = '#2d5016';
-    ctx.fillText('BROCCOLANDIA', 720, 320);
+    ctx.fillText('BROCCOLANDIA', 700, 380);
 
     ctx.fillStyle = '#8b6914';
     ctx.font = 'bold 14px serif';
-    ctx.fillText('MERCATO CENTRALE', 500, 300);
+    ctx.fillText('MERCATO CENTRALE', 500, 280);
     ctx.font = 'italic 12px serif';
-    ctx.fillText('(Territori Neutrali)', 500, 315);
+    ctx.fillText('(Territori Neutrali)', 500, 295);
 
     ctx.globalAlpha = 1;
 
-    // Linee di confine sottili per evidenziare le divisioni
-    ctx.strokeStyle = '#5d4e37';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.4;
-    ctx.setLineDash([2, 2]);
-
-    // Disegna alcuni confini principali
-    ctx.beginPath();
-    ctx.moveTo(500, 150);
-    ctx.lineTo(480, 300);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(200, 250);
-    ctx.lineTo(800, 240);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
+    // Aggiungi connessioni visive tra territori che si toccano
+    drawTerritoryBorder(centers.bulbopoli, centers.tropeaFields);
+    drawTerritoryBorder(centers.tropeaFields, centers.carrotCity);
+    drawTerritoryBorder(centers.scalognaValley, centers.pachinoCoast);
+    drawTerritoryBorder(centers.pachinoCoast, centers.sanMarzano);
+    drawTerritoryBorder(centers.rootDeep, centers.greenValley);
+    drawTerritoryBorder(centers.greenValley, centers.broccoliForest);
+    drawTerritoryBorder(centers.broccoliForest, centers.cavoloNero);
 
     // Rosa dei venti
     drawCompass(850, 120);
 
     // Velieri nel mare esterno
-    drawShip(100, 100);
-    drawShip(900, 650);
+    drawShip(150, 150);
+    drawShip(850, 600);
 
     // Legenda
     drawLegend();
