@@ -179,90 +179,13 @@ let territoryShapes = {};
 // Macchie di invecchiamento pre-generate (statiche)
 let parchmentSpots = [];
 
-// Sistema di editing base (MANTIENI)
-let editMode = false;
-let selectedTerritoryForEdit = null;
-let territoryTransforms = {};
-
-// Tracciamento posizione mouse per brush cursor (ASSICURATI CHE SIA QUI)
-let lastMouseX = 0, lastMouseY = 0;
-
-// Sistema editing avanzato (AGGIUNGI)
-let brushEditMode = {
-    active: false,
-    selectedTerritory: null,
-    tool: 'brush',
-    brushSize: 20,
-    isDrawing: false
-};
 
 
-// Funzioni di salvataggio/caricamento (AGGIUNGI QUESTE)
-function saveTerritoryShapes() {
-    localStorage.setItem('ortoConquista_territories', JSON.stringify(territoryShapes));
-    console.log('💾 Forme salvate nel browser');
-}
-
-function loadTerritoryShapes() {
-    const saved = localStorage.getItem('ortoConquista_territories');
-    if (saved) {
-        territoryShapes = JSON.parse(saved);
-        console.log('📁 Forme caricate dal browser');
-        return true;
-    }
-    return false;
-}
-
-function exportTerritoryShapes() {
-    console.log('=== COPIA QUESTO CODICE NEL TUO SCRIPT ===');
-    console.log('');
-    console.log('// Sostituisci la funzione generateTerritoryShapes() con questa:');
-    console.log('function generateTerritoryShapes() {');
-    console.log('    // Forme personalizzate salvate:');
-
-    Object.entries(territoryShapes).forEach(([territoryId, shape]) => {
-        console.log(`    territoryShapes['${territoryId}'] = ${JSON.stringify(shape, null, 8)};`);
-    });
-
-    console.log('}');
-    console.log('');
-    console.log('=== FINE CODICE DA COPIARE ===');
-}
 
 // Inizializzazione del gioco
 function initGame() {
     canvas = document.getElementById('mapCanvas');
     ctx = canvas.getContext('2d');
-
-    initTerritoryTransforms();
-
-    // PROVA A CARICARE FORME SALVATE
-    if (!loadTerritoryShapes()) {
-        // Se non ci sono forme salvate, genera quelle standard
-        generateTerritoryShapes();
-    }
-
-    generateParchmentSpots();
-
-    // Event listeners
-    canvas.addEventListener('click', handleCanvasClick);
-    canvas.addEventListener('mousemove', handleCanvasMouseMove); // Ora gestisce tutto
-    canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
-
-    // AGGIUNGI SOLO QUESTI DUE:
-    canvas.addEventListener('mousedown', (e) => {
-        if (brushEditMode.active && brushEditMode.selectedTerritory) {
-            brushEditMode.isDrawing = true;
-            // handleBrushEdit verrà chiamato da handleCanvasMouseMove
-        }
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        brushEditMode.isDrawing = false;
-    });
-
-    // Inizializza trasformazioni
-    initTerritoryTransforms();
 
     // PRE-GENERA LE FORME E LE MACCHIE (UNA SOLA VOLTA)
     generateTerritoryShapes();
@@ -288,26 +211,8 @@ function initGame() {
 
     // Event listeners per il canvas
     canvas.addEventListener('click', handleCanvasClick);
-    let lastMouseX = 0, lastMouseY = 0;
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        lastMouseX = (e.clientX - rect.left) * (canvas.width / rect.width);  // SENZA let
-        lastMouseY = (e.clientY - rect.top) * (canvas.height / rect.height);  // SENZA let
-        handleCanvasMouseMove(e);
-    });
-
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
     canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
-
-    // Event listeners per brush editing
-    canvas.addEventListener('mousedown', (e) => {
-        if (brushEditMode.active && brushEditMode.selectedTerritory) {
-            brushEditMode.isDrawing = true;
-        }
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        brushEditMode.isDrawing = false;
-    });
 
     // Disegna la mappa iniziale
     drawMap();
@@ -317,7 +222,6 @@ function initGame() {
 }
 
 // Gestione del click sulla mappa
-// SOSTITUISCI la funzione handleCanvasClick esistente con questa versione estesa:
 function handleCanvasClick(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -327,32 +231,12 @@ function handleCanvasClick(event) {
 
     const clickedTerritory = getTerritoryAtPosition(x, y);
 
-    // MODALITÀ BRUSH EDITING
-    if (brushEditMode.active && clickedTerritory) {
-        brushEditMode.selectedTerritory = clickedTerritory;
-        console.log(`Territorio selezionato per brush editing: ${clickedTerritory}`);
-        console.log('Ora usa B=pennello, G=gomma, poi clicca e trascina');
-        return;
-    }
-
-    // MODALITÀ EDITING BASE
-    if (editMode && clickedTerritory) {
-        selectedTerritoryForEdit = clickedTerritory;
-        console.log(`Territorio selezionato per editing: ${clickedTerritory}`);
-        return;
-    }
-
-    // MODALITÀ GIOCO NORMALE
     if (clickedTerritory) {
         handleTerritoryClick(clickedTerritory);
     }
 }
 
-
-
 // Gestione del movimento del mouse
-// SOSTITUISCI la funzione handleCanvasMouseMove esistente con questa:
-// Modifica handleCanvasMouseMove per usare il nuovo sistema
 function handleCanvasMouseMove(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -360,13 +244,6 @@ function handleCanvasMouseMove(event) {
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
 
-    // GESTIONE PIXEL BRUSH EDITING (NUOVO)
-    if (brushEditMode.active && brushEditMode.isDrawing) {
-        handlePixelBrushEdit(x, y);
-        return;
-    }
-
-    // GESTIONE HOVER NORMALE
     const hoveredTerritory = getTerritoryAtPosition(x, y);
 
     if (hoveredTerritory !== hoveredTerritoryId) {
@@ -420,20 +297,6 @@ function handleTerritoryClick(territoryId) {
             }
         }
     }
-}
-
-// Inizializza le trasformazioni di default
-function initTerritoryTransforms() {
-    Object.keys(territoryPositions).forEach(territoryId => {
-        territoryTransforms[territoryId] = {
-            x: 0,        // offset X
-            y: 0,        // offset Y
-            scaleX: 1,   // scala orizzontale
-            scaleY: 1,   // scala verticale
-            rotation: 0, // rotazione in radianti
-            radius: getTerritoryRadius(territoryId) // raggio base
-        };
-    });
 }
 
 function selectTerritory(territoryId) {
@@ -506,28 +369,18 @@ function drawAncientSea() {
 }
 
 // Funzione per generare forma organica (STATICA)
-function generateOrganicShape(centerX, centerY, baseRadius, seed = 0, transforms = {}) {
+function generateOrganicShape(centerX, centerY, baseRadius, seed = 0) {
     const points = [];
     const numPoints = 12 + Math.floor(seed * 8) % 8;
 
-    // Applica trasformazioni
-    const finalX = centerX + (transforms.x || 0);
-    const finalY = centerY + (transforms.y || 0);
-    const finalRadius = (transforms.radius || baseRadius);
-    const scaleX = transforms.scaleX || 1;
-    const scaleY = transforms.scaleY || 1;
-    const rotation = transforms.rotation || 0;
-
     for (let i = 0; i < numPoints; i++) {
-        const angle = (i / numPoints) * Math.PI * 2 + rotation;
+        const angle = (i / numPoints) * Math.PI * 2;
         let variance = 0.6 + (Math.sin(seed + i) + 1) * 0.4;
         const roughness = Math.sin(angle * 4 + seed) * 0.2 + Math.cos(angle * 7 + seed) * 0.15;
         variance += roughness;
-        const radius = finalRadius * variance;
-
-        const x = finalX + Math.cos(angle) * radius * scaleX;
-        const y = finalY + Math.sin(angle) * radius * scaleY;
-
+        const radius = baseRadius * variance;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
         points.push({ x, y });
     }
     return points;
@@ -851,29 +704,7 @@ function drawMap() {
     if (selectedTerritoryId) {
         drawConnections();
     }
-
-    // VISUALIZZA CURSORE BRUSH (NUOVO)
-    if (brushEditMode.active && brushEditMode.selectedTerritory) {
-        drawBrushCursor();
-    }
 }
-
-function drawBrushCursor() {
-    // Ottieni posizione mouse corrente (dovrai tracciare questo)
-    if (lastMouseX && lastMouseY) {
-        ctx.strokeStyle = brushEditMode.tool === 'brush' ? '#00ff00' : '#ff0000';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-
-        ctx.beginPath();
-        ctx.arc(lastMouseX, lastMouseY, brushEditMode.brushSize, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.setLineDash([]);
-    }
-}
-
-
 
 // FUNZIONI DI GIOCO
 
@@ -1472,321 +1303,8 @@ function setupKeyboardControls() {
             case 'Escape':
                 deselectTerritory();
                 break;
-
-            case 'Tab':
-                event.preventDefault();
-                editMode = !editMode;
-                brushEditMode.active = false; // disattiva brush mode
-                console.log('Edit Mode:', editMode ? 'ON' : 'OFF');
-                break;
-
-            // MODALITÀ EDITING AVANZATO
-            case 'm': case 'M':
-                event.preventDefault();
-                brushEditMode.active = !brushEditMode.active;
-                editMode = false; // disattiva edit mode base
-                console.log('Brush Edit Mode:', brushEditMode.active ? 'ON' : 'OFF');
-                if (brushEditMode.active) {
-                    console.log('Clicca territorio, poi B=pennello, G=gomma, Enter=conferma');
-                }
-                break;
-
-            case 'p': case 'P':
-                if (editMode || brushEditMode.active) {
-                    console.log('=== CONFIGURAZIONE ATTUALE ===');
-                    console.log(JSON.stringify(territoryTransforms, null, 2));
-                }
-                break;
-
-            case 'o': case 'O':
-                if (editMode || brushEditMode.active) {
-                    exportTerritoryShapes();
-                }
-                break;
-        }
-
-        // CONTROLLI EDITING BASE (quando editMode è attivo)
-        if (editMode && selectedTerritoryForEdit) {
-            const transform = territoryTransforms[selectedTerritoryForEdit];
-            let changed = false;
-
-            switch (event.key) {
-                case 'w': case 'W': transform.y -= 5; changed = true; break;
-                case 's': case 'S': transform.y += 5; changed = true; break;
-                case 'a': case 'A': transform.x -= 5; changed = true; break;
-                case 'd': case 'D': transform.x += 5; changed = true; break;
-                case 'q': case 'Q': transform.scaleX *= 1.1; changed = true; break;
-                case 'e': case 'E': transform.scaleX *= 0.9; changed = true; break;
-                case 'r': case 'R': transform.rotation += 0.1; changed = true; break;
-                case 'f': case 'F': transform.rotation -= 0.1; changed = true; break;
-                case 'z': case 'Z': transform.radius *= 1.1; changed = true; break;
-                case 'x': case 'X': transform.radius *= 0.9; changed = true; break;
-                case 'c': case 'C': transform.scaleY *= 1.1; changed = true; break;
-                case 'v': case 'V': transform.scaleY *= 0.9; changed = true; break;
-            }
-
-            if (changed) {
-                generateTerritoryShapes();
-                drawMap();
-            }
-        }
-
-        // CONTROLLI BRUSH MODE (quando brushEditMode è attivo)
-        if (brushEditMode.active) {
-            switch (event.key) {
-                case 'b': case 'B':
-                    brushEditMode.tool = 'brush';
-                    console.log('Modalità: Pennello');
-                    break;
-                case 'g': case 'G':
-                    brushEditMode.tool = 'eraser';
-                    console.log('Modalità: Gomma');
-                    break;
-                case 'Enter':
-                    if (brushEditMode.active && brushEditMode.selectedTerritory) {
-                        confirmBrushEdits();
-                    }
-                    break;
-                case '[':
-                    brushEditMode.brushSize = Math.max(5, brushEditMode.brushSize - 5);
-                    console.log('Dimensione pennello:', brushEditMode.brushSize);
-                    break;
-                case ']':
-                    brushEditMode.brushSize = Math.min(50, brushEditMode.brushSize + 5);
-                    console.log('Dimensione pennello:', brushEditMode.brushSize);
-                    break;
-            }
         }
     });
-
-
-}
-
-// Funzioni per il brush editing (AGGIUNGI QUESTE)
-function handleBrushEdit(x, y) {
-    if (!brushEditMode.active || !brushEditMode.selectedTerritory) return;
-
-    const territoryId = brushEditMode.selectedTerritory;
-    const points = [...territoryShapes[territoryId]]; // copia
-
-    if (brushEditMode.tool === 'brush') {
-        addPointsNearCursor(points, x, y);
-    } else if (brushEditMode.tool === 'eraser') {
-        removePointsNearCursor(points, x, y);
-    }
-
-    // Aggiorna forma temporanea
-    territoryShapes[territoryId] = points;
-    drawMap();
-}
-
-function addPointsNearCursor(points, cursorX, cursorY) {
-    // Trova il punto più vicino nella forma esistente
-    let closestIndex = 0;
-    let closestDistance = Infinity;
-
-    points.forEach((point, index) => {
-        const distance = Math.sqrt((point.x - cursorX) ** 2 + (point.y - cursorY) ** 2);
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-        }
-    });
-
-    // Se il cursore è abbastanza vicino, "espandi" la forma verso di esso
-    if (closestDistance < brushEditMode.brushSize) {
-        const newPoint = { x: cursorX, y: cursorY };
-        points.splice(closestIndex + 1, 0, newPoint);
-    }
-}
-
-// Conferma le modifiche del pennello
-function confirmBrushEdits() {
-    const territoryId = brushEditMode.selectedTerritory;
-
-    if (territoryPixelMap[territoryId]) {
-        const finalShape = pixelMapToPolygon(territoryPixelMap[territoryId]);
-
-        if (finalShape.length >= 3) {
-            territoryShapes[territoryId] = finalShape;
-
-            // SALVA AUTOMATICAMENTE
-            saveTerritoryShapes();
-
-            console.log(`✅ Modifiche a ${territoryId} salvate!`);
-            exportTerritoryShapes(); // Mostra anche il codice
-        }
-    }
-
-    // Esci dalla modalità brush
-    brushEditMode.active = false;
-    brushEditMode.selectedTerritory = null;
-    brushEditMode.isDrawing = false;
-
-    drawMap();
-}
-
-// Genera codice JavaScript da copiare nel file
-function exportTerritoryShapes() {
-    console.log('=== COPIA QUESTO CODICE NEL TUO SCRIPT ===');
-    console.log('');
-    console.log('// Sostituisci la funzione generateTerritoryShapes() con questa:');
-    console.log('function generateTerritoryShapes() {');
-    console.log('    // Forme personalizzate salvate:');
-
-    Object.entries(territoryShapes).forEach(([territoryId, shape]) => {
-        console.log(`    territoryShapes['${territoryId}'] = ${JSON.stringify(shape, null, 8)};`);
-    });
-
-    console.log('}');
-    console.log('');
-    console.log('=== FINE CODICE DA COPIARE ===');
-}
-
-function removePointsNearCursor(points, cursorX, cursorY) {
-    // Rimuovi tutti i punti dentro il raggio della gomma
-    for (let i = points.length - 1; i >= 0; i--) {
-        const point = points[i];
-        const distance = Math.sqrt((point.x - cursorX) ** 2 + (point.y - cursorY) ** 2);
-
-        if (distance < brushEditMode.brushSize && points.length > 3) {
-            points.splice(i, 1);
-        }
-    }
-}
-
-// Sistema di editing basato su pixel
-let territoryPixelMap = {};
-let pixelResolution = 2; // Ogni 2 pixel del canvas = 1 pixel della mappa
-
-// Converte territorio in mappa pixel
-function territoryToPixelMap(territoryId) {
-    const shape = territoryShapes[territoryId];
-    const bounds = getTerritoryBounds(shape);
-    const map = {};
-
-    // Crea griglia pixel nell'area del territorio
-    for (let x = bounds.minX; x <= bounds.maxX; x += pixelResolution) {
-        for (let y = bounds.minY; y <= bounds.maxY; y += pixelResolution) {
-            if (isPointInPolygon(x, y, shape)) {
-                const key = `${Math.floor(x / pixelResolution)},${Math.floor(y / pixelResolution)}`;
-                map[key] = true; // pixel è territorio
-            }
-        }
-    }
-
-    return map;
-}
-
-// Controlla se punto è dentro poligono
-function isPointInPolygon(x, y, polygon) {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i].x, yi = polygon[i].y;
-        const xj = polygon[j].x, yj = polygon[j].y;
-
-        if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
-            inside = !inside;
-        }
-    }
-    return inside;
-}
-
-// Ottieni bounds del territorio
-function getTerritoryBounds(shape) {
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-
-    shape.forEach(point => {
-        minX = Math.min(minX, point.x);
-        maxX = Math.max(maxX, point.x);
-        minY = Math.min(minY, point.y);
-        maxY = Math.max(maxY, point.y);
-    });
-
-    return { minX, maxX, minY, maxY };
-}
-
-// Converte mappa pixel in nuovo poligono
-function pixelMapToPolygon(pixelMap) {
-    if (Object.keys(pixelMap).length === 0) return [];
-
-    // Trova tutti i pixel di bordo
-    const borderPixels = [];
-
-    Object.keys(pixelMap).forEach(key => {
-        const [x, y] = key.split(',').map(Number);
-
-        // Controlla se è pixel di bordo (ha almeno un vicino vuoto)
-        const neighbors = [
-            `${x - 1},${y}`, `${x + 1},${y}`,
-            `${x},${y - 1}`, `${x},${y + 1}`
-        ];
-
-        const isBorder = neighbors.some(neighbor => !pixelMap[neighbor]);
-        if (isBorder) {
-            borderPixels.push({ x: x * pixelResolution, y: y * pixelResolution });
-        }
-    });
-
-    // Ordina i pixel di bordo per creare un poligono
-    return orderBorderPixels(borderPixels);
-}
-
-// Ordina pixel di bordo in senso orario
-function orderBorderPixels(pixels) {
-    if (pixels.length < 3) return pixels;
-
-    // Trova centro
-    const centerX = pixels.reduce((sum, p) => sum + p.x, 0) / pixels.length;
-    const centerY = pixels.reduce((sum, p) => sum + p.y, 0) / pixels.length;
-
-    // Ordina per angolo dal centro
-    return pixels.sort((a, b) => {
-        const angleA = Math.atan2(a.y - centerY, a.x - centerX);
-        const angleB = Math.atan2(b.y - centerY, b.x - centerX);
-        return angleA - angleB;
-    });
-}
-
-// Nuovo sistema brush che lavora sui pixel
-function handlePixelBrushEdit(x, y) {
-    if (!brushEditMode.active || !brushEditMode.selectedTerritory) return;
-
-    const territoryId = brushEditMode.selectedTerritory;
-
-    // Inizializza mappa pixel se non esiste
-    if (!territoryPixelMap[territoryId]) {
-        territoryPixelMap[territoryId] = territoryToPixelMap(territoryId);
-    }
-
-    const pixelMap = territoryPixelMap[territoryId];
-    const brushRadius = brushEditMode.brushSize;
-
-    // Applica pennello/gomma in area circolare
-    for (let dx = -brushRadius; dx <= brushRadius; dx += pixelResolution) {
-        for (let dy = -brushRadius; dy <= brushRadius; dy += pixelResolution) {
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance <= brushRadius) {
-                const pixelX = Math.floor((x + dx) / pixelResolution);
-                const pixelY = Math.floor((y + dy) / pixelResolution);
-                const key = `${pixelX},${pixelY}`;
-
-                if (brushEditMode.tool === 'brush') {
-                    pixelMap[key] = true; // Aggiungi pixel
-                } else if (brushEditMode.tool === 'eraser') {
-                    delete pixelMap[key]; // Rimuovi pixel
-                }
-            }
-        }
-    }
-
-    // Ricostruisci il poligono dalla mappa pixel
-    const newPolygon = pixelMapToPolygon(pixelMap);
-    if (newPolygon.length >= 3) {
-        territoryShapes[territoryId] = newPolygon;
-        drawMap();
-    }
 }
 
 // Inizializza il gioco quando la pagina è caricata
