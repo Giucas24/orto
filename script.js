@@ -317,7 +317,6 @@ function initGame() {
 }
 
 // Gestione del click sulla mappa
-// SOSTITUISCI la funzione handleCanvasClick esistente con questa versione estesa:
 function handleCanvasClick(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -327,18 +326,11 @@ function handleCanvasClick(event) {
 
     const clickedTerritory = getTerritoryAtPosition(x, y);
 
-    // MODALITÀ BRUSH EDITING
-    if (brushEditMode.active && clickedTerritory) {
-        brushEditMode.selectedTerritory = clickedTerritory;
-        console.log(`Territorio selezionato per brush editing: ${clickedTerritory}`);
-        console.log('Ora usa B=pennello, G=gomma, poi clicca e trascina');
-        return;
-    }
-
-    // MODALITÀ EDITING BASE
+    // MODALITÀ EDITING
     if (editMode && clickedTerritory) {
         selectedTerritoryForEdit = clickedTerritory;
         console.log(`Territorio selezionato per editing: ${clickedTerritory}`);
+        console.log('Usa WASD=sposta, QE=scala X, CV=scala Y, RF=ruota, ZX=raggio');
         return;
     }
 
@@ -348,11 +340,7 @@ function handleCanvasClick(event) {
     }
 }
 
-
-
 // Gestione del movimento del mouse
-// SOSTITUISCI la funzione handleCanvasMouseMove esistente con questa:
-// Modifica handleCanvasMouseMove per usare il nuovo sistema
 function handleCanvasMouseMove(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -360,13 +348,6 @@ function handleCanvasMouseMove(event) {
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
 
-    // GESTIONE PIXEL BRUSH EDITING (NUOVO)
-    if (brushEditMode.active && brushEditMode.isDrawing) {
-        handlePixelBrushEdit(x, y);
-        return;
-    }
-
-    // GESTIONE HOVER NORMALE
     const hoveredTerritory = getTerritoryAtPosition(x, y);
 
     if (hoveredTerritory !== hoveredTerritoryId) {
@@ -422,6 +403,16 @@ function handleTerritoryClick(territoryId) {
     }
 }
 
+function selectTerritory(territoryId) {
+    selectedTerritoryId = territoryId;
+    drawMap();
+}
+
+function deselectTerritory() {
+    selectedTerritoryId = null;
+    drawMap();
+}
+
 // Inizializza le trasformazioni di default
 function initTerritoryTransforms() {
     Object.keys(territoryPositions).forEach(territoryId => {
@@ -474,6 +465,8 @@ function getDisplayName(territoryId) {
 
 // FUNZIONI DI DISEGNO DELLA MAPPA
 
+// FUNZIONI DI DISEGNO
+
 // Funzione per creare texture di pergamena
 function createParchmentTexture() {
     const gradient = ctx.createRadialGradient(500, 350, 50, 500, 350, 600);
@@ -485,7 +478,7 @@ function createParchmentTexture() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1000, 700);
 
-    // Usa le macchie PRE-GENERATE invece di generarle ogni volta
+    // Usa le macchie pre-generate
     ctx.globalAlpha = 0.1;
     parchmentSpots.forEach(spot => {
         ctx.fillStyle = spot.color;
@@ -505,7 +498,9 @@ function drawAncientSea() {
     ctx.globalAlpha = 1;
 }
 
-// Funzione per generare forma organica (STATICA)
+// FUNZIONI PER LA GENERAZIONE DELLE FORME
+
+// Funzione per generare forma organica
 function generateOrganicShape(centerX, centerY, baseRadius, seed = 0, transforms = {}) {
     const points = [];
     const numPoints = 12 + Math.floor(seed * 8) % 8;
@@ -533,16 +528,17 @@ function generateOrganicShape(centerX, centerY, baseRadius, seed = 0, transforms
     return points;
 }
 
-// Pre-genera tutte le forme dei territori (chiamata una sola volta)
+// Pre-genera tutte le forme dei territori
 function generateTerritoryShapes() {
     Object.entries(territoryPositions).forEach(([territoryId, pos], index) => {
         const radius = getTerritoryRadius(territoryId);
-        const seed = index * 123.456; // Seed diverso per ogni territorio
-        territoryShapes[territoryId] = generateOrganicShape(pos.x, pos.y, radius, seed);
+        const seed = index * 123.456;
+        const transforms = territoryTransforms[territoryId] || {};
+        territoryShapes[territoryId] = generateOrganicShape(pos.x, pos.y, radius, seed, transforms);
     });
 }
 
-// Pre-genera le macchie di invecchiamento (chiamata una sola volta)
+// Pre-genera le macchie di invecchiamento
 function generateParchmentSpots() {
     parchmentSpots = [];
     for (let i = 0; i < 50; i++) {
@@ -602,7 +598,6 @@ function drawLineBetween(territory1, territory2) {
 }
 
 function getTerritoryRadius(territoryId) {
-    // Radii specifici per ogni territorio
     const radii = {
         'bulbopoli': 55, 'tropeaFields': 60, 'scalognaValley': 50,
         'carrotCity': 65, 'orangeCounty': 55, 'rootDeep': 58,
@@ -619,13 +614,13 @@ function drawGameTerritory(territoryId, centerX, centerY, radius, colorSet) {
     const territory = gameState.territories[territoryId];
     if (!territory) return;
 
-    // USA LE FORME PRE-GENERATE invece di generarle ogni volta
+    // Usa le forme pre-generate
     const points = territoryShapes[territoryId];
     if (!points) return;
 
     ctx.save();
 
-    // Disegna il territorio (resto uguale...)
+    // Disegna il territorio
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
@@ -844,17 +839,12 @@ function drawMap() {
     // Rosa dei venti
     drawCompass(850, 120);
 
-    // AGGIUNGI QUESTA RIGA:
+    // Bordi delle regioni
     drawRegionBorders();
 
     // Connessioni tra territori (se territorio selezionato)
     if (selectedTerritoryId) {
         drawConnections();
-    }
-
-    // VISUALIZZA CURSORE BRUSH (NUOVO)
-    if (brushEditMode.active && brushEditMode.selectedTerritory) {
-        drawBrushCursor();
     }
 }
 
@@ -874,6 +864,8 @@ function drawBrushCursor() {
 }
 
 
+
+// FUNZIONI DI GIOCO
 
 // FUNZIONI DI GIOCO
 
@@ -934,6 +926,8 @@ function checkPhaseTransition() {
         }, 1000);
     }
 }
+
+// ABILITÀ DEI LEADER
 
 // Usa abilità leader
 function useLeaderAbility() {
@@ -1193,7 +1187,7 @@ function endTurn() {
     drawMap();
 }
 
-// Sistema carte evento
+// Pesca carta evento
 function drawEventCard() {
     if (gameState.cardsRemaining <= 0) {
         addLogEntry('🎴 Mazzo esaurito!', 'log-move');
@@ -1237,7 +1231,7 @@ function closeDrawnCard() {
     if (gameState.drawnCard) {
         gameState.players[gameState.currentPlayer].cards.push(gameState.drawnCard);
         gameState.drawnCard = null;
-        updatePlayerCardsDisplay();
+        updateCardsDisplay();
     }
 }
 
@@ -1247,6 +1241,43 @@ function useDrawnCard() {
         gameState.drawnCard = null;
         document.getElementById('card-drawn-overlay').style.display = 'none';
     }
+}
+
+// Apri overlay delle carte in mano
+function openCardsOverlay() {
+    const overlay = document.getElementById('cards-overlay');
+    const grid = document.getElementById('cards-grid');
+    const playerCards = gameState.players[gameState.currentPlayer].cards;
+
+    // Pulisci griglia
+    grid.innerHTML = '';
+
+    if (playerCards.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">Nessuna carta in mano</p>';
+    } else {
+        playerCards.forEach((card, index) => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'player-card';
+            cardElement.innerHTML = `
+                <div class="player-card-name">${card.icon} ${card.name}</div>
+                <div class="player-card-desc">${card.description}</div>
+                <div class="player-card-effect">Effetto: ${card.effect} (Potenza: ${card.power})</div>
+            `;
+            cardElement.onclick = () => {
+                playEventCard(card);
+                playerCards.splice(index, 1);
+                updateCardsDisplay();
+                closeCardsOverlay();
+            };
+            grid.appendChild(cardElement);
+        });
+    }
+
+    overlay.style.display = 'flex';
+}
+
+function closeCardsOverlay() {
+    document.getElementById('cards-overlay').style.display = 'none';
 }
 
 function playEventCard(card) {
@@ -1294,13 +1325,26 @@ function playEventCard(card) {
                 drawMap();
             }
             break;
+        case 'extra_attacks':
+            addLogEntry(`⚡ ${card.name}: Puoi effettuare ${card.power} attacchi extra!`, 'log-special');
+            break;
+        case 'harvest':
+            const bonus = Math.floor(gameState.players[gameState.currentPlayer].territories.length / 2) * card.power;
+            gameState.reinforcements += bonus;
+            addLogEntry(`🌾 ${card.name}: +${bonus} rinforzi dal raccolto!`, 'log-special');
+            break;
     }
 
     updateDisplay();
 }
 
 function updateCardsDisplay() {
+    const cardsInHand = gameState.players[gameState.currentPlayer].cards.length;
+    document.getElementById('cards-in-hand').textContent = cardsInHand;
     document.getElementById('cards-remaining').textContent = gameState.cardsRemaining;
+
+    // Abilita/disabilita il pulsante visualizza carte
+    document.getElementById('view-cards').disabled = cardsInHand === 0;
 }
 
 function updatePlayerCardsDisplay() {
@@ -1352,15 +1396,32 @@ function resetGame() {
     location.reload();
 }
 
+// AGGIORNAMENTO DISPLAY
+
 // Aggiorna display principale
 function updateDisplay() {
     const currentPlayer = gameState.players[gameState.currentPlayer];
 
-    // Info giocatore corrente
-    document.getElementById('player-name').textContent = currentPlayer.name;
-    document.getElementById('player-emoji').textContent = currentPlayer.emoji;
-    document.getElementById('player-color').style.background = currentPlayer.color;
+    // Aggiorna sezione leader
+    document.getElementById('leader-avatar').textContent = currentPlayer.emoji;
+    document.getElementById('leader-avatar').style.borderColor = currentPlayer.color;
+    document.getElementById('leader-title').textContent = currentPlayer.leader;
+    document.getElementById('faction-name').textContent = `Clan dei ${currentPlayer.name}`;
+
+    // Aggiorna colore bordo della sezione leader
+    const leaderSection = document.getElementById('leader-section');
+    leaderSection.style.borderLeftColor = currentPlayer.color;
+
+    // Statistiche leader
+    document.getElementById('territory-count').textContent = currentPlayer.territories.length;
+    document.getElementById('reinforcements').textContent = gameState.reinforcements;
     document.getElementById('turn-counter').textContent = gameState.turn;
+
+    // Info abilità
+    document.getElementById('ability-name').textContent = currentPlayer.ability;
+    document.getElementById('ability-desc').textContent = currentPlayer.abilityDescription;
+    document.getElementById('faction-bonus').textContent = currentPlayer.bonus;
+    document.getElementById('faction-weakness').textContent = currentPlayer.weakness;
 
     // Fase corrente
     const phaseNames = {
@@ -1370,26 +1431,13 @@ function updateDisplay() {
     };
     document.getElementById('current-phase').textContent = phaseNames[gameState.phase];
 
-    // Info fazione dettagliate
-    document.getElementById('faction-name').textContent = `${currentPlayer.emoji} Clan dei ${currentPlayer.name}`;
-    document.getElementById('leader-name').textContent = currentPlayer.leader;
-    document.getElementById('ability-name').textContent = currentPlayer.ability;
-    document.getElementById('ability-desc').textContent = currentPlayer.abilityDescription;
-    document.getElementById('faction-bonus').textContent = currentPlayer.bonus;
-    document.getElementById('faction-weakness').textContent = currentPlayer.weakness;
-
-    document.getElementById('territory-count').textContent = currentPlayer.territories.length;
-    document.getElementById('reinforcements').textContent = gameState.reinforcements;
+    // Statistiche generali
     document.getElementById('battle-count').textContent = gameState.battleCount;
 
     // Bottone abilità leader
     const abilityBtn = document.getElementById('leader-ability');
     abilityBtn.disabled = currentPlayer.abilityUsed || gameState.phase !== 'attack';
     abilityBtn.textContent = currentPlayer.abilityUsed ? '✅ Abilità Usata' : '🌟 Usa Abilità Leader';
-
-    // Aggiorna colore bordo info fazione
-    const factionInfo = document.getElementById('faction-info');
-    factionInfo.style.borderLeftColor = currentPlayer.color;
 
     // Aggiorna stato bottoni
     document.getElementById('place-reinforcements').disabled =
@@ -1400,11 +1448,9 @@ function updateDisplay() {
 
     // Aggiorna display carte
     updateCardsDisplay();
-    updatePlayerCardsDisplay();
 
     // Abilita fase movimento se in fase attacco e nessun territorio selezionato
     if (gameState.phase === 'attack' && !selectedTerritoryId) {
-        // Controlla se ci sono attacchi possibili
         const canAttack = gameState.players[gameState.currentPlayer].territories.some(tId => {
             const territory = gameState.territories[tId];
             return territory && territory.units > 1 &&
@@ -1435,7 +1481,8 @@ function addLogEntry(message, className = '') {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
-// Controlli da tastiera
+// CONTROLLI DA TASTIERA (solo quelli di gioco e editing base)
+
 function setupKeyboardControls() {
     document.addEventListener('keydown', (event) => {
         switch (event.key) {
@@ -1469,98 +1516,113 @@ function setupKeyboardControls() {
                     drawEventCard();
                 }
                 break;
+            case 'v':
+            case 'V':
+                if (!document.getElementById('view-cards').disabled) {
+                    openCardsOverlay();
+                }
+                break;
             case 'Escape':
                 deselectTerritory();
+                closeCardsOverlay();
                 break;
 
+            // MODALITÀ EDITING BASE
             case 'Tab':
                 event.preventDefault();
                 editMode = !editMode;
-                brushEditMode.active = false; // disattiva brush mode
                 console.log('Edit Mode:', editMode ? 'ON' : 'OFF');
-                break;
-
-            // MODALITÀ EDITING AVANZATO
-            case 'm': case 'M':
-                event.preventDefault();
-                brushEditMode.active = !brushEditMode.active;
-                editMode = false; // disattiva edit mode base
-                console.log('Brush Edit Mode:', brushEditMode.active ? 'ON' : 'OFF');
-                if (brushEditMode.active) {
-                    console.log('Clicca territorio, poi B=pennello, G=gomma, Enter=conferma');
-                }
-                break;
-
-            case 'p': case 'P':
-                if (editMode || brushEditMode.active) {
-                    console.log('=== CONFIGURAZIONE ATTUALE ===');
-                    console.log(JSON.stringify(territoryTransforms, null, 2));
-                }
-                break;
-
-            case 'o': case 'O':
-                if (editMode || brushEditMode.active) {
-                    exportTerritoryShapes();
+                if (editMode) {
+                    console.log('Clicca territorio, poi usa:');
+                    console.log('WASD = sposta, QE = scala X, CV = scala Y');
+                    console.log('RF = ruota, ZX = raggio, P = stampa config');
                 }
                 break;
         }
 
-        // CONTROLLI EDITING BASE (quando editMode è attivo)
+        // CONTROLLI EDITING (quando editMode è attivo)
         if (editMode && selectedTerritoryForEdit) {
             const transform = territoryTransforms[selectedTerritoryForEdit];
             let changed = false;
 
             switch (event.key) {
-                case 'w': case 'W': transform.y -= 5; changed = true; break;
-                case 's': case 'S': transform.y += 5; changed = true; break;
-                case 'a': case 'A': transform.x -= 5; changed = true; break;
-                case 'd': case 'D': transform.x += 5; changed = true; break;
-                case 'q': case 'Q': transform.scaleX *= 1.1; changed = true; break;
-                case 'e': case 'E': transform.scaleX *= 0.9; changed = true; break;
-                case 'r': case 'R': transform.rotation += 0.1; changed = true; break;
-                case 'f': case 'F': transform.rotation -= 0.1; changed = true; break;
-                case 'z': case 'Z': transform.radius *= 1.1; changed = true; break;
-                case 'x': case 'X': transform.radius *= 0.9; changed = true; break;
-                case 'c': case 'C': transform.scaleY *= 1.1; changed = true; break;
-                case 'v': case 'V': transform.scaleY *= 0.9; changed = true; break;
+                case 'w': case 'W':
+                    transform.y -= 5;
+                    changed = true;
+                    break;
+                case 's': case 'S':
+                    transform.y += 5;
+                    changed = true;
+                    break;
+                case 'a': case 'A':
+                    transform.x -= 5;
+                    changed = true;
+                    break;
+                case 'd': case 'D':
+                    transform.x += 5;
+                    changed = true;
+                    break;
+                case 'q': case 'Q':
+                    transform.scaleX *= 1.1;
+                    changed = true;
+                    break;
+                case 'e': case 'E':
+                    transform.scaleX *= 0.9;
+                    changed = true;
+                    break;
+                case 'r': case 'R':
+                    transform.rotation += 0.1;
+                    changed = true;
+                    break;
+                case 'f': case 'F':
+                    transform.rotation -= 0.1;
+                    changed = true;
+                    break;
+                case 'z': case 'Z':
+                    transform.radius *= 1.1;
+                    changed = true;
+                    break;
+                case 'x': case 'X':
+                    transform.radius *= 0.9;
+                    changed = true;
+                    break;
+                case 'c': case 'C':
+                    transform.scaleY *= 1.1;
+                    changed = true;
+                    break;
+                case 'v': case 'V':
+                    transform.scaleY *= 0.9;
+                    changed = true;
+                    break;
+                case 'p': case 'P':
+                    console.log('=== CONFIGURAZIONE ATTUALE ===');
+                    console.log(JSON.stringify(territoryTransforms, null, 2));
+                    break;
             }
 
             if (changed) {
                 generateTerritoryShapes();
                 drawMap();
-            }
-        }
-
-        // CONTROLLI BRUSH MODE (quando brushEditMode è attivo)
-        if (brushEditMode.active) {
-            switch (event.key) {
-                case 'b': case 'B':
-                    brushEditMode.tool = 'brush';
-                    console.log('Modalità: Pennello');
-                    break;
-                case 'g': case 'G':
-                    brushEditMode.tool = 'eraser';
-                    console.log('Modalità: Gomma');
-                    break;
-                case 'Enter':
-                    if (brushEditMode.active && brushEditMode.selectedTerritory) {
-                        confirmBrushEdits();
-                    }
-                    break;
-                case '[':
-                    brushEditMode.brushSize = Math.max(5, brushEditMode.brushSize - 5);
-                    console.log('Dimensione pennello:', brushEditMode.brushSize);
-                    break;
-                case ']':
-                    brushEditMode.brushSize = Math.min(50, brushEditMode.brushSize + 5);
-                    console.log('Dimensione pennello:', brushEditMode.brushSize);
-                    break;
+                console.log(`${selectedTerritoryForEdit} modificato:`, transform);
             }
         }
     });
-
-
 }
+
+// INIZIALIZZAZIONE
+
+// Inizializza il gioco quando la pagina è caricata
+window.addEventListener('load', () => {
+    initGame();
+    setupKeyboardControls();
+
+    // Messaggio di benvenuto
+    setTimeout(() => {
+        addLogEntry('🗺️ Mappa dell\'Orto Globale caricata! Esplorate le 5 regioni principali!', 'log-special');
+        addLogEntry('⌨️ Controlli: R=Rinforzi, E=Fine Turno, A=Attacco, S=Abilità, C=Pesca Carta, V=Visualizza Carte', 'log-move');
+        addLogEntry('🛠️ Editing: TAB=Modalità Edit, poi clicca territorio e usa WASD, QE, CV, RF, ZX', 'log-move');
+    }, 2000);
+});
 
 // Funzioni per il brush editing (AGGIUNGI QUESTE)
 function handleBrushEdit(x, y) {
@@ -1788,15 +1850,3 @@ function handlePixelBrushEdit(x, y) {
         drawMap();
     }
 }
-
-// Inizializza il gioco quando la pagina è caricata
-window.addEventListener('load', () => {
-    initGame();
-    setupKeyboardControls();
-
-    // Messaggio di benvenuto
-    setTimeout(() => {
-        addLogEntry('🗺️ Mappa dell\'Orto Globale caricata! Esplorate le 5 regioni principali!', 'log-special');
-        addLogEntry('⌨️ Controlli: R=Rinforzi, E=Fine Turno, A=Attacco, S=Abilità, C=Pesca Carta, ESC=Deseleziona', 'log-move');
-    }, 2000);
-});

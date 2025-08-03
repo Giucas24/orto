@@ -8,11 +8,6 @@
 </head>
 
 <body>
-    <div class="game-header">
-        <h1>🥕 ORTO CONQUISTA 🥕</h1>
-        <p>La battaglia vegetale più epica del giardino!</p>
-    </div>
-
     <div class="game-container">
         <div class="map-container">
             <div class="title">🗺️ ISOLA DELL'ORTO GLOBALE 🗺️</div>
@@ -20,36 +15,32 @@
         </div>
 
         <div class="controls-panel">
-            <div class="current-player" id="current-player">
-                <h3>🎯 Turno di: <span id="player-name">Cavolfiori</span></h3>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <div id="player-color"
-                        style="width: 25px; height: 25px; border-radius: 50%; border: 3px solid #333;"></div>
-                    <span id="player-emoji" style="font-size: 24px;">❄️</span>
+            <!-- Sezione Leader -->
+            <div class="leader-section" id="leader-section">
+                <div class="leader-avatar" id="leader-avatar">❄️</div>
+                <h3 id="leader-title">Generale Cavolo Brassius</h3>
+                <div class="faction-name" id="faction-name">Clan dei Cavolfiori</div>
+
+                <div class="leader-stats">
+                    <div class="stat-row">
+                        <span>🏰 Territori:</span>
+                        <span id="territory-count">3</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>🎖️ Rinforzi:</span>
+                        <span id="reinforcements">4</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>🎯 Turno:</span>
+                        <span id="turn-counter">1</span>
+                    </div>
                 </div>
-                <div>Turno: <span id="turn-counter">1</span></div>
-            </div>
 
-            <div class="phase-indicator" id="phase-indicator">
-                <strong>🎮 Fase: <span id="current-phase">Rinforzi</span></strong>
-                <div id="phase-timer" style="margin-top: 5px; font-size: 12px;">⏰ Tempo illimitato</div>
-            </div>
-
-            <div class="faction-info" id="faction-info">
-                <h4 id="faction-name">❄️ Clan dei Cavolfiori</h4>
-                <p><strong>👑 Leader:</strong> <span id="leader-name">Generale Cavolo Brassius</span></p>
-                <p><strong>🔮 Abilità:</strong> <span id="ability-name">Resistenza Glaciale</span></p>
-                <p><small id="ability-desc">Una volta per turno può rigenerare 1 unità</small></p>
-                <p><strong>💪 Bonus:</strong> <span id="faction-bonus">+1 difesa in montagna</span></p>
-                <p><strong>⚠️ Debolezza:</strong> <span id="faction-weakness">-1 vs Carote</span></p>
-
-                <div class="stat-item">
-                    <span>🏰 Territori:</span>
-                    <span id="territory-count">3</span>
-                </div>
-                <div class="stat-item">
-                    <span>🎖️ Rinforzi:</span>
-                    <span id="reinforcements">4</span>
+                <div class="ability-info">
+                    <div class="ability-title">🔮 <span id="ability-name">Resistenza Glaciale</span></div>
+                    <div class="ability-desc" id="ability-desc">Una volta per turno può rigenerare 1 unità</div>
+                    <div class="ability-bonus">💪 <span id="faction-bonus">+1 difesa in montagna</span></div>
+                    <div class="ability-weakness">⚠️ <span id="faction-weakness">-1 vs Carote</span></div>
                 </div>
 
                 <button class="button special" id="leader-ability" onclick="useLeaderAbility()">
@@ -57,35 +48,47 @@
                 </button>
             </div>
 
-            <div class="controls">
-                <button class="button" id="place-reinforcements" onclick="placeReinforcements()">
-                    ⚡ Piazza Rinforzi Auto
-                </button>
-                <button class="button attack" id="attack-btn" onclick="toggleAttackMode()" disabled>
-                    ⚔️ Modalità Attacco
-                </button>
-                <button class="button" id="end-turn" onclick="endTurn()" disabled>
-                    🔄 Fine Turno
-                </button>
-            </div>
-
+            <!-- Sezione Carte Evento -->
             <div class="cards-section" id="cards-section">
                 <h4>🎴 Carte Evento</h4>
-                <div id="card-deck-container">
-                    <div class="card-deck" id="card-deck" onclick="drawEventCard()">
-                        <div class="card-back">
-                            <div class="card-pattern">🌱</div>
-                            <div class="card-title">MAZZO</div>
-                            <div class="card-pattern">🍃</div>
-                        </div>
-                        <div class="cards-remaining" id="cards-remaining">12</div>
+                <div class="cards-info">
+                    <div class="cards-status">
+                        <span>Carte in mano: <span id="cards-in-hand">0</span></span>
+                        <span>Mazzo: <span id="cards-remaining">12</span></span>
                     </div>
-                </div>
-                <div id="player-cards" class="player-cards">
-                    <!-- Le carte in mano del giocatore appariranno qui -->
+
+                    <div class="cards-actions">
+                        <button class="button" id="draw-card" onclick="drawEventCard()">
+                            🎲 Pesca Carta
+                        </button>
+                        <button class="button" id="view-cards" onclick="openCardsOverlay()" disabled>
+                            👁️ Visualizza Carte
+                        </button>
+                    </div>
                 </div>
             </div>
 
+            <!-- Controlli di Gioco -->
+            <div class="game-controls">
+                <div class="phase-indicator" id="phase-indicator">
+                    <strong>🎮 Fase: <span id="current-phase">Rinforzi</span></strong>
+                    <div id="phase-timer" style="margin-top: 5px; font-size: 12px;">⏰ Tempo illimitato</div>
+                </div>
+
+                <div class="controls">
+                    <button class="button" id="place-reinforcements" onclick="placeReinforcements()">
+                        ⚡ Piazza Rinforzi Auto
+                    </button>
+                    <button class="button attack" id="attack-btn" onclick="toggleAttackMode()" disabled>
+                        ⚔️ Modalità Attacco
+                    </button>
+                    <button class="button" id="end-turn" onclick="endTurn()" disabled>
+                        🔄 Fine Turno
+                    </button>
+                </div>
+            </div>
+
+            <!-- Log delle Battaglie -->
             <div class="battle-log">
                 <h4>📜 Log delle Battaglie</h4>
                 <div id="log-content">
@@ -94,6 +97,7 @@
                 </div>
             </div>
 
+            <!-- Statistiche -->
             <div class="stats-panel">
                 <h4>📊 Statistiche</h4>
                 <div class="stat-item">
@@ -117,6 +121,19 @@
         <div class="phase-content">
             <div class="phase-icon" id="phase-icon">⚡</div>
             <div class="phase-text" id="phase-text">Fase Rinforzi</div>
+        </div>
+    </div>
+
+    <!-- Overlay carte in mano -->
+    <div class="cards-overlay" id="cards-overlay">
+        <div class="cards-overlay-content">
+            <div class="cards-header">
+                <h3>🎴 Le Tue Carte Evento</h3>
+                <button class="close-btn" onclick="closeCardsOverlay()">×</button>
+            </div>
+            <div class="cards-grid" id="cards-grid">
+                <!-- Le carte del giocatore verranno mostrate qui -->
+            </div>
         </div>
     </div>
 
